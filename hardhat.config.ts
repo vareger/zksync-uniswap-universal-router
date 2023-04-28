@@ -1,8 +1,19 @@
 import 'hardhat-typechain'
 import '@nomiclabs/hardhat-ethers'
 import '@nomicfoundation/hardhat-chai-matchers'
+import '@matterlabs/hardhat-zksync-deploy'
+import '@matterlabs/hardhat-zksync-solc'
+import '@matterlabs/hardhat-zksync-verify'
+import { task } from 'hardhat/config'
+import deployZkSyncEraTestnet from './script/deployParameters/zksync_era_testnet'
 import dotenv from 'dotenv'
 dotenv.config()
+
+task('deployZkSyncEraTestnet')
+    .addParam('privateKey', 'Private key used to deploy')
+    .setAction(async (taskArgs) => {
+      await deployZkSyncEraTestnet(taskArgs)
+    })
 
 const DEFAULT_COMPILER_SETTINGS = {
   version: '0.8.17',
@@ -62,6 +73,17 @@ export default {
     polygon: {
       url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
     },
+    zkSyncLocalSetup: {
+      url: "http://localhost:3050",
+      ethNetwork: "http://localhost:8545",
+      zksync: true,
+    },
+    zkSyncTestnet: {
+      url: "https://testnet.era.zksync.dev",
+      ethNetwork: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      zksync: true,
+      verifyURL: 'https://zksync2-testnet-explorer.zksync.dev/contract_verification'
+    },
   },
   namedAccounts: {
     deployer: 0,
@@ -71,5 +93,10 @@ export default {
   },
   mocha: {
     timeout: 60000,
+  },
+  zksolc: {
+    version: "1.3.10",
+    compilerSource: "binary",
+    settings: {},
   },
 }
