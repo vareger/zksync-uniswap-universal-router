@@ -1,8 +1,8 @@
 import deployZkSyncEra from '../deploy_zksync_era'
 
 const ROUTER_PARAMS = {
-    permit2: '0x000000000022D473030F116dDEE9F6B43aC78BA3',
-    weth9: '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889',
+    permit2: '0x6fbAE87e7b6f624bF256b05A1eaF2D4D9B53E7ec',
+    weth9: '0x440bac118befca196a87b0e0027137979a9549ce',
     seaport: undefined,
     seaportV1_4: undefined,
     openseaConduit: undefined,
@@ -18,9 +18,9 @@ const ROUTER_PARAMS = {
     looksRareRewardsDistributor: undefined,
     looksRareToken: undefined,
     v2Factory: undefined,
-    v3Factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    v3Factory: '0x9c7E0Ee840CB5117FE16047Ed7e127ed50C62B9D',
     pairInitCodeHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    poolInitCodeHash: '0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54'
+    poolInitCodeHash: '0x010013eddc3e59d6ce5c1429f6e115ca3d72a9b92bc824c814bb9f50a7fa4057'
 }
 
 const UNSUPPORTED_ADDRESS = undefined
