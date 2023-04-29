@@ -23,7 +23,7 @@ const ROUTER_PARAMS = {
     poolInitCodeHash: '0x010013eddc3e59d6ce5c1429f6e115ca3d72a9b92bc824c814bb9f50a7fa4057'
 }
 
-const UNSUPPORTED_ADDRESS = undefined
+const UNSUPPORTED_ADDRESS = '0x8dD5A45c35e85E26888f8b1c89d9A1e3fF9a982B'
 
 export default async function deployZkSyncEraTestnet(taskArgs: any) {
     await deployZkSyncEra(taskArgs, ROUTER_PARAMS, UNSUPPORTED_ADDRESS)
