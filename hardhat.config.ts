@@ -97,6 +97,10 @@ export default {
   zksolc: {
     version: "1.3.10",
     compilerSource: "binary",
-    settings: {},
+    settings: {
+      metadata: {
+        bytecodeHash: 'none',
+      },
+    },
   },
 }
