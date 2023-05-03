@@ -56,7 +56,13 @@ library UniswapV2Library {
             uint160(
                 uint256(
                     keccak256(
-                        abi.encodePacked(hex'ff', factory, keccak256(abi.encodePacked(token0, token1)), initCodeHash)
+                        abi.encodePacked(
+                            bytes32(0x2020dba91b30cc0006188af794c2fb30dd8520db7e2c088b7fc7c103c00ca494), // keccak256("zksyncCreate2")
+                            bytes32(uint256(uint160(factory))), // sender
+                            keccak256(abi.encodePacked(token0, token1)),
+                            initCodeHash,
+                            bytes32(0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470) // constructor input hash: keccak256("")
+                        )
                     )
                 )
             )
