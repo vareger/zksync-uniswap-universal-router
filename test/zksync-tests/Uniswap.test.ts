@@ -380,7 +380,7 @@ describe('Uniswap V2:', () => {
           // for these tests Bob gives the router max approval on permit2
           await (await permit2.approve(daiContract.address, router.address, MAX_UINT160, DEADLINE)).wait()
           await (await permit2.approve(wethContract.address, router.address, MAX_UINT160, DEADLINE)).wait()
-         
+          planner = new RoutePlanner()
         })
 
         describe('ERC20 --> ERC20', () => {
@@ -418,7 +418,7 @@ describe('Uniswap V2:', () => {
             let daiBalanceAfter = await daiContract.balanceOf(bob.address)
             //console.log("DAI balance after: " + daiBalanceAfter)
 
-            expect(daiBalanceBefore.sub(daiBalanceAfter)).to.be.gt(amountOut)
+            expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.gt(amountOut)
           })
 
           it('exactIn trade, where an output fee is taken', async () => {
@@ -536,78 +536,58 @@ describe('Uniswap V2:', () => {
               expect(bobEarnings).to.be.gt(0)
             })
         })
-        /** 
+       
         describe('ETH --> ERC20', () => {
             it('completes a V2 exactIn swap', async () => {
               const minAmountOut = expandTo18DecimalsBN(0.001)
               const pairAddress = await uniswapV2Factory.getPair(daiContract.address, wethContract.address)
-              console.log("Pair: " + pairAddress)
-              
-              await new Promise(f => setTimeout(f, 6000));
+          
+              planner.addCommand(CommandType.WRAP_ETH, [pairAddress, amountIn])
 
-              planner.addCommand(CommandType.WRAP_ETH, [pairAddress, CONTRACT_BALANCE])
-              
               // amountIn of 0 because the weth is already in the pair
-              // planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
-              //   MSG_SENDER,
-              //   0,
-              //   minAmountOut,
-              //   [wethContract.address, daiContract.address],
-              //   SOURCE_MSG_SENDER,
-              // ])
-              const daiBalanceBefore = await daiContract.balanceOf(router.address)
-              const wethBalanceBefore = await wethContract.balanceOf(router.address)
-              console.log("daiBalanceBefore:  " + daiBalanceBefore)
-              console.log("wethBalanceBefore: " + wethBalanceBefore)
-
-              let reservesBefore = await uniswapV2Router.getReserves(daiContract.address, wethContract.address)
-              console.log("reserves before: " + reservesBefore)
+              planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
+                MSG_SENDER,
+                0,
+                minAmountOut,
+                [wethContract.address, daiContract.address],
+                SOURCE_MSG_SENDER,
+              ])
+              const daiBalanceBefore = await daiContract.balanceOf(bob.address)
 
               await executeRouter(planner, amountIn)
-              
-              let reservesAfter = await uniswapV2Router.getReserves(daiContract.address, wethContract.address)
-              console.log("reserves after:  " + reservesAfter)
 
-              const daiBalanceAfter = await daiContract.balanceOf(router.address)
-              const wethBalanceAfter = await wethContract.balanceOf(router.address)
-              console.log("daiBalanceAfter:  " + daiBalanceAfter)
-              console.log("wethBalanceAfter: " + wethBalanceAfter)
+              const daiBalanceAfter = await daiContract.balanceOf(bob.address)
 
-              expect(daiBalanceBefore.sub(daiBalanceAfter)).to.be.gt(minAmountOut)
+              expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.gt(minAmountOut)
             })
       
-            it.skip('completes a V2 exactOut swap', async () => {
-              const amountOut = expandTo18DecimalsBN(0.1)
-              const value = expandTo18DecimalsBN(10)
+            it('completes a V2 exactOut swap', async () => {
+              const amountOut = expandTo18DecimalsBN(100)
+              const value = expandTo18DecimalsBN(1.5)
 
-              planner.addCommand(CommandType.WRAP_ETH, [router.address, CONTRACT_BALANCE])
-              // planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
-              //   MSG_SENDER,
-              //   amountOut,
-              //   value,
-              //   [wethContract.address, daiContract.address],
-              //   SOURCE_ROUTER,
-              // ])
-              //planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, 0])
+              planner.addCommand(CommandType.WRAP_ETH, [router.address, value])
+              planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
+                MSG_SENDER,
+                amountOut,
+                value,
+                [wethContract.address, daiContract.address],
+                SOURCE_ROUTER,
+              ])
+              planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, 0])
                 
-              const wethBalanceBefore = await wethContract.balanceOf(router.address)
-              const daiBalanceBefore = await daiContract.balanceOf(router.address)
-              console.log("wethBalanceBefore: " + wethBalanceBefore)
-              console.log("daiBalanceBefore:  " + daiBalanceBefore)
-             
-
+              const daiBalanceBefore = await daiContract.balanceOf(bob.address)
+              
               await executeRouter(planner, value)
             
-              const wethBalanceAfter = await wethContract.balanceOf(router.address)
-              const daiBalanceAfter = await daiContract.balanceOf(router.address)
-              console.log("wethBalanceAfter: " + wethBalanceAfter)
-              console.log("daiBalanceAfter:  " + daiBalanceAfter)
-            
-              expect(daiBalanceBefore.sub(daiBalanceAfter)).gt(amountOut) // rounding
+              const daiBalanceAfter = await daiContract.balanceOf(bob.address)
+
+              expect(daiBalanceAfter.sub(daiBalanceBefore)).gt(amountOut) // rounding
 
             })
         })
-        */
+
+
+        
     })
 
     type V2SwapEventArgs = {
