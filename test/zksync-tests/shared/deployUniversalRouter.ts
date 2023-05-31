@@ -15,6 +15,8 @@ import {
 
 export async function deployRouter(
     permit2: Permit2,
+    weth9Address: string,
+    v2FactoryAddress: string,
     mockLooksRareRewardsDistributor?: string,
     mockLooksRareToken?: string
 ): Promise<UniversalRouter> {
@@ -22,7 +24,7 @@ export async function deployRouter(
     mockLooksRareToken
     const routerParameters = {
         permit2: permit2.address,
-        weth9: ZERO_ADDRESS,
+        weth9: weth9Address,
         seaport: ZERO_ADDRESS,
         nftxZap: ZERO_ADDRESS,
         x2y2: ZERO_ADDRESS,
@@ -34,7 +36,7 @@ export async function deployRouter(
         routerRewardsDistributor: ZERO_ADDRESS,
         looksRareRewardsDistributor: ZERO_ADDRESS,
         looksRareToken: ZERO_ADDRESS,
-        v2Factory: V2_FACTORY_MAINNET,
+        v2Factory: v2FactoryAddress,
         v3Factory: V3_FACTORY_MAINNET,
         pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,
         poolInitCodeHash: V3_INIT_CODE_HASH_MAINNET,
@@ -76,6 +78,6 @@ export async function deployRouterAndPermit2(
     mockLooksRareToken?: string
 ): Promise<[UniversalRouter, Permit2]> {
     const permit2 = await deployPermit2()
-    const router = await deployRouter(permit2, mockLooksRareRewardsDistributor, mockLooksRareToken)
+    const router = await deployRouter(permit2, ZERO_ADDRESS, ZERO_ADDRESS, mockLooksRareRewardsDistributor, mockLooksRareToken)
     return [router, permit2]
 }

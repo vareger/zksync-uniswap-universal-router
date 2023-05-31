@@ -1,4 +1,4 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { Wallet } from 'zksync-web3'
 import { BigNumber } from 'ethers'
 import hre from 'hardhat'
 import PERMIT2_COMPILE from '../../../../artifacts-zk/permit2/src/Permit2.sol/Permit2.json'
@@ -74,7 +74,7 @@ export function getEip712Domain(chainId: number, verifyingContract: string) {
 
 export async function signPermit(
   permit: PermitSingle,
-  signer: SignerWithAddress,
+  signer: Wallet,
   verifyingContract: string
 ): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
@@ -85,7 +85,7 @@ export async function signPermit(
 
 export async function getPermitSignature(
   permit: PermitSingle,
-  signer: SignerWithAddress,
+  signer: Wallet,
   permit2: Permit2
 ): Promise<string> {
   // look up the correct nonce for this permit
@@ -96,7 +96,7 @@ export async function getPermitSignature(
 
 export async function getPermitBatchSignature(
   permit: PermitBatch,
-  signer: SignerWithAddress,
+  signer: Wallet,
   permit2: Permit2
 ): Promise<string> {
   for (const i in permit.details) {
@@ -109,7 +109,7 @@ export async function getPermitBatchSignature(
 
 export async function signPermitBatch(
   permit: PermitBatch,
-  signer: SignerWithAddress,
+  signer: Wallet,
   verifyingContract: string
 ): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
