@@ -1,7 +1,7 @@
 import hre from 'hardhat'
 // const { ethers } = hre
-import { UniversalRouter, Permit2 } from '../../../typechain'
-import { Wallet, Provider } from 'zksync-web3'
+import {  Permit2, UniversalRouter } from '../../../typechain'
+import { Wallet, Provider, Contract } from 'zksync-web3'
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy'
 
 import {
@@ -15,25 +15,29 @@ import {
 
 export async function deployRouter(
     permit2: Permit2,
+    seaportAddress?: string,
+    nftxAddress?: string,
+    mockERC20Address?: string,
+    aliceAddress?: string,
     mockLooksRareRewardsDistributor?: string,
-    mockLooksRareToken?: string
+    cryptopunksAddress?: string
 ): Promise<UniversalRouter> {
-    mockLooksRareRewardsDistributor
-    mockLooksRareToken
+    
+    
     const routerParameters = {
         permit2: permit2.address,
         weth9: ZERO_ADDRESS,
-        seaport: ZERO_ADDRESS,
-        nftxZap: ZERO_ADDRESS,
+        seaport: seaportAddress || ZERO_ADDRESS,
+        nftxZap: nftxAddress || ZERO_ADDRESS,
         x2y2: ZERO_ADDRESS,
         foundation: ZERO_ADDRESS,
         sudoswap: ZERO_ADDRESS,
         nft20Zap: ZERO_ADDRESS,
-        cryptopunks: ZERO_ADDRESS,
+        cryptopunks: cryptopunksAddress || ZERO_ADDRESS,
         looksRare: ZERO_ADDRESS,
-        routerRewardsDistributor: ZERO_ADDRESS,
-        looksRareRewardsDistributor: ZERO_ADDRESS,
-        looksRareToken: ZERO_ADDRESS,
+        routerRewardsDistributor: aliceAddress || ZERO_ADDRESS,
+        looksRareRewardsDistributor: mockLooksRareRewardsDistributor || ZERO_ADDRESS,
+        looksRareToken: mockERC20Address || ZERO_ADDRESS,
         v2Factory: V2_FACTORY_MAINNET,
         v3Factory: V3_FACTORY_MAINNET,
         pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,

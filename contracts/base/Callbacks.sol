@@ -29,4 +29,5 @@ contract Callbacks is IERC721Receiver, IERC1155Receiver {
         return interfaceId == type(IERC1155Receiver).interfaceId || interfaceId == type(IERC721Receiver).interfaceId
             || interfaceId == type(IERC165).interfaceId;
     }
+
 }
