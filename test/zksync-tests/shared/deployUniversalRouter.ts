@@ -20,7 +20,8 @@ export async function deployRouter(
     mockERC20Address?: string,
     aliceAddress?: string,
     mockLooksRareRewardsDistributor?: string,
-    cryptopunksAddress?: string
+    cryptopunksAddress?: string,
+    mockFoundationAddress?: string
 ): Promise<UniversalRouter> {
     
     
@@ -30,7 +31,7 @@ export async function deployRouter(
         seaport: seaportAddress || ZERO_ADDRESS,
         nftxZap: nftxAddress || ZERO_ADDRESS,
         x2y2: ZERO_ADDRESS,
-        foundation: ZERO_ADDRESS,
+        foundation: mockFoundationAddress || ZERO_ADDRESS,
         sudoswap: ZERO_ADDRESS,
         nft20Zap: ZERO_ADDRESS,
         cryptopunks: cryptopunksAddress || ZERO_ADDRESS,

@@ -47,16 +47,13 @@ describe('Cryptopunks', () => {
       planner.addCommand(CommandType.CRYPTOPUNKS, [2976, ALICE_ADDRESS, value])
       const { commands, inputs } = planner
 
-      //await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value });
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, {value})).to.be.revertedWithCustomError(router, 'ExecutionFailed');
         
-      // await (
-      //   await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })
-      // ).wait()
+      await (
+        await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })
+      ).wait()
 
       // Expect that alice has the NFT
       let testAddress = await cryptopunks.punkIndexToAddress(2976);
-      console.log(testAddress)
       await expect(testAddress).to.eq(ALICE_ADDRESS)
       // gas test
       // await expect(aliceBalance.sub(await ethers.provider.getBalance(alice.address))).to.eq(

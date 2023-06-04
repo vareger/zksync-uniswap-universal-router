@@ -18,7 +18,7 @@ contract MockCryptopunks is ICryptoPunksMarket, ERC721 {
     }
 
     function buyPunk(uint256 punkIndex) override external payable {
-        _mint(alice, punkIndex);
+        
     }
 
     function transferPunk(address to, uint256 punkIndex) override external {
