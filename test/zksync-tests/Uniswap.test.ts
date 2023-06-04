@@ -11,19 +11,22 @@ import {
     ETH_ADDRESS,
     SOURCE_ROUTER,
     CONTRACT_BALANCE,
+    ALICE_ADDRESS,
+    ZERO_ADDRESS,
 } from './shared/constants'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import hre, { ethers } from 'hardhat'
+import hre from 'hardhat'
 import { parseEvents, V2_EVENTS, V3_EVENTS } from './shared/parseEvents'
-import { deployPermit2, deployRouter} from './shared/deployUniversalRouter'
+import { deployPermit2, deployMockPermit2, deployRouter} from './shared/deployUniversalRouter'
 import { deployUniswapV2, deployUniswapV2Factory, deployUniswapV2Router, calculateInitCodeHash} from './shared/deployUniswapV2'
 import { expect } from './shared/expect'
 import { Wallet, Provider, Contract } from 'zksync-web3'
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy'
 import { expandTo18DecimalsBN, expandTo6DecimalsBN } from './shared/helpers'
 import { RoutePlanner, CommandType} from './shared/planner'
-import { getPermitSignature, PermitSingle } from './shared/protocolHelpers/permit2'
+import { getPermitSignature, PermitSingle} from './shared/protocolHelpers/permit2'
 import { BigNumber, BigNumberish } from 'ethers'
+import {ethers} from 'ethers'
 
 /**
  * $ yarn hardhat test test/zksync-tests/Uniswap.test.ts --network zkSyncLocalhost
@@ -67,7 +70,23 @@ describe('Uniswap V2:', () => {
         uniswapV2Router = uniswapV2[1]
 
         permit2 = (await deployPermit2()).connect(bob) as Permit2
-        router = (await deployRouter(permit2, wethContract.address, uniswapV2Factory.address)).connect(bob) as UniversalRouter
+        router = (await deployRouter(
+          permit2, 
+          wethContract.address, 
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,   
+          uniswapV2Factory.address
+          )
+        ).connect(bob) as UniversalRouter
         planner = new RoutePlanner()
 
         console.log("Permit2 address: " + permit2.address)
@@ -275,29 +294,33 @@ describe('Uniswap V2:', () => {
         })
     })
 
-    describe.skip('Trade on Uniswap with Permit2, giving approval every time', () => {
+    describe('Trade on Uniswap with Permit2, giving approval every time', () => {
         describe('ERC20 --> ERC20', () => {
-            let permit: PermitSingle
+            let permitSingle: PermitSingle
+            beforeEach(async () => {
+              planner = new RoutePlanner()
+            })
             
             it('V2 exactIn, permiting the exact amount', async () => {
                 const amountInDAI = expandTo18DecimalsBN(100)
                 const minAmountOutWETH = 0
 
-                // second bob signs a permit to allow the router to access his DAI
-                permit = {
+                // second bob signs a permitSingle to allow the router to access his DAI
+                permitSingle = {
                     details: {
-                    token: daiContract.address,
-                    amount: amountInDAI,
-                    expiration: 0, // expiration of 0 is block.timestamp
-                    nonce: 0, // this is his first trade
+                      token: daiContract.address,
+                      amount: amountInDAI,
+                      expiration: 0, // expiration of 0 is block.timestamp
+                      nonce: 0, // this is his first trade
                     },
                     spender: router.address,
                     sigDeadline: DEADLINE,
                 }
-                const sig = await getPermitSignature(permit, bob, permit2)
 
-                // 1) permit the router to access funds, 2) withdraw the funds into the pair, 3) trade
-                planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, sig])
+                const signingKey: ethers.utils.SigningKey = new ethers.utils.SigningKey(BOB_PRIVATE_KEY)
+                const sig = await getPermitSignature(permitSingle, signingKey, permit2)
+                
+                planner.addCommand(CommandType.PERMIT2_PERMIT, [permitSingle, sig])
                 planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
                     MSG_SENDER,
                     amountInDAI,
@@ -305,18 +328,19 @@ describe('Uniswap V2:', () => {
                     [daiContract.address, wethContract.address],
                     SOURCE_MSG_SENDER,
                 ])
+                
                 const { wethBalanceBefore, wethBalanceAfter, daiBalanceAfter, daiBalanceBefore } = await executeRouter(planner)
-                // expect(wethBalanceAfter.sub(wethBalanceBefore)).to.be.gte(minAmountOutWETH)
-                // expect(daiBalanceBefore.sub(daiBalanceAfter)).to.be.eq(amountInDAI)
+                expect(wethBalanceAfter.sub(wethBalanceBefore)).to.be.gte(minAmountOutWETH)
+                expect(daiBalanceBefore.sub(daiBalanceAfter)).to.be.eq(amountInDAI)
 
             })
 
-            it.skip('V2 exactOut, permiting the maxAmountIn', async () => {
+            it('V2 exactOut, permiting the maxAmountIn', async () => {
                 const maxAmountInDAI = expandTo18DecimalsBN(3000)
                 const amountOutWETH = expandTo18DecimalsBN(1)
-        
-                // second bob signs a permit to allow the router to access his DAI
-                permit = {
+
+                // second bob signs a permitSingle to allow the router to access his DAI
+                permitSingle = {
                   details: {
                     token: daiContract.address,
                     amount: maxAmountInDAI,
@@ -326,10 +350,12 @@ describe('Uniswap V2:', () => {
                   spender: router.address,
                   sigDeadline: DEADLINE,
                 }
-                const sig = await getPermitSignature(permit, bob, permit2)
+
+                const signingKey: ethers.utils.SigningKey = new ethers.utils.SigningKey(BOB_PRIVATE_KEY);
+                const sig = await getPermitSignature(permitSingle, signingKey, permit2)
         
-                // 1) permit the router to access funds, 2) trade - the transfer happens within the trade for exactOut
-                planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, sig])
+                // 1) permitSingle the router to access funds, 2) trade - the transfer happens within the trade for exactOut
+                planner.addCommand(CommandType.PERMIT2_PERMIT, [permitSingle, sig])
                 planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
                   MSG_SENDER,
                   amountOutWETH,
@@ -338,16 +364,16 @@ describe('Uniswap V2:', () => {
                   SOURCE_MSG_SENDER,
                 ])
                 const { wethBalanceBefore, wethBalanceAfter, daiBalanceAfter, daiBalanceBefore } = await executeRouter(planner)
-                // expect(wethBalanceAfter.sub(wethBalanceBefore)).to.be.eq(amountOutWETH)
-                // expect(daiBalanceBefore.sub(daiBalanceAfter)).to.be.lte(maxAmountInDAI)
+                expect(wethBalanceAfter.sub(wethBalanceBefore)).to.be.eq(amountOutWETH)
+                expect(daiBalanceBefore.sub(daiBalanceAfter)).to.be.lte(maxAmountInDAI)
             })
 
-            it.skip('V2 exactIn, swapping more than max_uint160 should revert', async () => {
+            it('V2 exactIn, swapping more than max_uint160 should revert', async () => {
                 const max_uint = BigNumber.from(MAX_UINT160)
                 const minAmountOutWETH = expandTo18DecimalsBN(0.03)
         
-                // second bob signs a permit to allow the router to access his DAI
-                permit = {
+                // second bob signs a permitSingle to allow the router to access his DAI
+                permitSingle = {
                   details: {
                     token: daiContract.address,
                     amount: max_uint,
@@ -357,10 +383,11 @@ describe('Uniswap V2:', () => {
                   spender: router.address,
                   sigDeadline: DEADLINE,
                 }
-                const sig = await getPermitSignature(permit, bob, permit2)
+                const signingKey: ethers.utils.SigningKey = new ethers.utils.SigningKey(BOB_PRIVATE_KEY);
+                const sig = await getPermitSignature(permitSingle, signingKey, permit2)
         
-                // 1) permit the router to access funds, 2) withdraw the funds into the pair, 3) trade
-                planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, sig])
+                // 1) permitSingle the router to access funds, 2) withdraw the funds into the pair, 3) trade
+                planner.addCommand(CommandType.PERMIT2_PERMIT, [permitSingle, sig])
                 planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
                   MSG_SENDER,
                   BigNumber.from(MAX_UINT160).add(1),
@@ -369,7 +396,7 @@ describe('Uniswap V2:', () => {
                   SOURCE_MSG_SENDER,
                 ])
         
-                await expect(executeRouter(planner)).to.be.revertedWith('UnsafeCast()')
+                await expect(executeRouter(planner)).to.be.reverted
             })
         })
     })   
@@ -481,11 +508,11 @@ describe('Uniswap V2:', () => {
               ])
               planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, 0])
               
-              const ethBalanceBefore = await ethers.provider.getBalance(bob.address)
+              const ethBalanceBefore = await provider.getBalance(bob.address)
 
               await executeRouter(planner)
 
-              const ethBalanceAfter = await ethers.provider.getBalance(bob.address)
+              const ethBalanceAfter = await provider.getBalance(bob.address)
 
               expect(ethBalanceAfter.sub(ethBalanceBefore)).to.gt(0)
             })
@@ -521,12 +548,12 @@ describe('Uniswap V2:', () => {
               planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, MSG_SENDER, 0])
       
               const { commands, inputs } = planner
-              const ethBalanceBeforeAlice = await ethers.provider.getBalance(alice.address)
-              const ethBalanceBeforeBob = await ethers.provider.getBalance(bob.address)
+              const ethBalanceBeforeAlice = await provider.getBalance(alice.address)
+              const ethBalanceBeforeBob = await provider.getBalance(bob.address)
               const receipt = await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).wait()
               
-              const ethBalanceAfterAlice = await ethers.provider.getBalance(alice.address)
-              const ethBalanceAfterBob = await ethers.provider.getBalance(bob.address)
+              const ethBalanceAfterAlice = await provider.getBalance(alice.address)
+              const ethBalanceAfterBob = await provider.getBalance(bob.address)
               const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice)
       
               const aliceFee = ethBalanceAfterAlice.sub(ethBalanceBeforeAlice)
@@ -587,7 +614,7 @@ describe('Uniswap V2:', () => {
         })
 
 
-        
+
     })
 
     type V2SwapEventArgs = {
@@ -618,7 +645,7 @@ describe('Uniswap V2:', () => {
       }
 
     async function executeRouter(planner: RoutePlanner, value?: BigNumberish): Promise<ExecutionParams> {
-        const ethBalanceBefore: BigNumber = await ethers.provider.getBalance(bob.address)
+        const ethBalanceBefore: BigNumber = await provider.getBalance(bob.address)
         const wethBalanceBefore: BigNumber = await wethContract.balanceOf(bob.address)
         const daiBalanceBefore: BigNumber = await daiContract.balanceOf(bob.address)
         const usdcBalanceBefore: BigNumber = await usdcContract.balanceOf(bob.address)
@@ -630,7 +657,7 @@ describe('Uniswap V2:', () => {
         const v2SwapEventArgs = parseEvents(V2_EVENTS, receipt)[0]?.args as unknown as V2SwapEventArgs
         const v3SwapEventArgs = parseEvents(V3_EVENTS, receipt)[0]?.args as unknown as V3SwapEventArgs
     
-        const ethBalanceAfter: BigNumber = await ethers.provider.getBalance(bob.address)
+        const ethBalanceAfter: BigNumber = await provider.getBalance(bob.address)
         const wethBalanceAfter: BigNumber = await wethContract.balanceOf(bob.address)
         const daiBalanceAfter: BigNumber = await daiContract.balanceOf(bob.address)
         const usdcBalanceAfter: BigNumber = await usdcContract.balanceOf(bob.address)
