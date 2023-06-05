@@ -20,8 +20,7 @@ const _HASHED_NAME = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Permit2"))
 
 const _TYPE_HASH = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("EIP712Domain(string name,uint256 chainId,address verifyingContract)"));
 
-const _PERMIT_BATCH_TYPEHASH = ethers.utils.keccak256("PermitBatch(PermitDetails[] details,address spender,uint256 sigDeadline)PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)");
-
+const _PERMIT_BATCH_TYPEHASH = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PermitBatch(PermitDetails[] details,address spender,uint256 sigDeadline)PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)"));
 
 
 export type PermitDetails = {
