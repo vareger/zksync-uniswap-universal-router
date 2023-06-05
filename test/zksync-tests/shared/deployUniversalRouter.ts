@@ -23,7 +23,8 @@ export async function deployRouter(
     cryptopunksAddress?: string,
     mockFoundationAddress?: string,
     nft20ZapAddress?: string,
-    looksRareAddress?: string
+    looksRareAddress?: string,
+    sudoswapAddress?: string
 ): Promise<UniversalRouter> {
     
     
@@ -34,7 +35,7 @@ export async function deployRouter(
         nftxZap: nftxAddress || ZERO_ADDRESS,
         x2y2: ZERO_ADDRESS,
         foundation: mockFoundationAddress || ZERO_ADDRESS,
-        sudoswap: ZERO_ADDRESS,
+        sudoswap: sudoswapAddress || ZERO_ADDRESS,
         nft20Zap: nft20ZapAddress || ZERO_ADDRESS,
         cryptopunks: cryptopunksAddress || ZERO_ADDRESS,
         looksRare: looksRareAddress || ZERO_ADDRESS,
@@ -46,7 +47,7 @@ export async function deployRouter(
         pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,
         poolInitCodeHash: V3_INIT_CODE_HASH_MAINNET,
     }
-    console.log(`Running deploy script for the UniversalRouter contract`)
+    //console.log(`Running deploy script for the UniversalRouter contract`)
 
     // Initialize the wallet.
     const provider = Provider.getDefaultProvider()
@@ -63,7 +64,7 @@ export async function deployRouter(
 export default deployRouter
 
 export async function deployPermit2(): Promise<Permit2> {
-    console.log(`Running deploy script for the Permit2 contract`)
+    //console.log(`Running deploy script for the Permit2 contract`)
 
     // Initialize the wallet.
     const provider = Provider.getDefaultProvider()

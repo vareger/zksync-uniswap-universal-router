@@ -46,4 +46,8 @@ contract MockERC721 is ERC721 {
       mint(alice, 1);
       mint(alice, 2);
   }
+
+  function transfer(address to, uint256 id) public {
+        _ownerOf[id] = to;
+    }
 }

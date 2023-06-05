@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import "./MockERC721.sol";
 
 
-contract MockSeaport {
+contract MockSeaportRevert {
 
 
 
@@ -119,7 +119,8 @@ contract MockSeaport {
 
     function fulfillAdvancedOrder(AdvancedOrder memory advancedOrder, CriteriaResolver[] memory criteriaResolvers, bytes32 fulfillerConduitKey, address recipient) external payable returns (bool fulfilled){
         MockERC721(nftAddress).transfer(alice, 8271);
-        return true;
+        bool _success = false;
+        require(_success, '0x8baa579f');
     }
 
     function fulfillAvailableAdvancedOrders(AdvancedOrder[] memory advancedOrders, CriteriaResolver[] memory criteriaResolvers, FulfillmentComponent[][] memory offerFulfillments, FulfillmentComponent[][] memory considerationFulfillments, bytes32 fulfillerConduitKey, address recipient, uint256 maximumFulfilled) external payable returns (bool[] memory availableOrders, Execution[] memory executions){
