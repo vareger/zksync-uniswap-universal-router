@@ -1,6 +1,6 @@
 import { CommandType, RoutePlanner } from './shared/planner'
 import { expect } from './shared/expect'
-import { ERC721, Permit2, UniversalRouter, MockSeaport } from '../../typechain'
+import { ERC721, Permit2, UniversalRouter } from '../../typechain'
 import {
   seaportOrders,
   seaportInterface,
@@ -42,11 +42,11 @@ describe('Check Ownership', () => {
     let deployer = new Deployer(hre, alice)
 
     const MockCryptoCovens = await deployer.loadArtifact("MockCryptoCovens")
-    const MockSeaport = await deployer.loadArtifact("MockSeaport")
+    const MockSeaport2 = await deployer.loadArtifact("MockSeaport2")
     const MockLooksRare1155 = await deployer.loadArtifact("MockLooksRare1155")
 
     cryptoCovens = await deployer.deploy(MockCryptoCovens, [alice.address]) as unknown as ERC721
-    seaport = await deployer.deploy(MockSeaport, [cryptoCovens.address, alice.address])
+    seaport = await deployer.deploy(MockSeaport2, [cryptoCovens.address, alice.address])
     looksRare1155 = await deployer.deploy(MockLooksRare1155, [alice.address])
 
     permit2 = (await deployPermit2()).connect(alice) as Permit2

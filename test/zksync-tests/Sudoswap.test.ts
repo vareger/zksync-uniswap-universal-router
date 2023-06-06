@@ -1,7 +1,7 @@
 import { CommandType, RoutePlanner } from './shared/planner';
 import SUDOSWAP_ABI from './shared/abis/Sudoswap.json';
 import { UniversalRouter, Permit2 } from '../../typechain';
-import { ALICE_ADDRESS, DEADLINE } from './shared/constants';
+import { ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS } from './shared/constants';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
 import { ALICE_PRIVATE_KEY} from './shared/constants';
 import hre from 'hardhat';
@@ -35,7 +35,15 @@ describe('Sudoswap', () => {
    
    
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
-    router = (await deployUniversalRouter(permit2, '', '', '', '', '', '', '', '', '', mockSudoswap.address)).connect(alice) as UniversalRouter;
+    router = (await deployUniversalRouter(
+      permit2, 
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      mockSudoswap.address
+    )).connect(alice) as UniversalRouter;
     planner = new RoutePlanner();
   })
 
@@ -63,10 +71,6 @@ describe('Sudoswap', () => {
       await expect(await mockSudoswap.ownerOf(80)).to.eq(ALICE_ADDRESS);
       await expect(await mockSudoswap.ownerOf(35)).to.eq(ALICE_ADDRESS);
       await expect(await mockSudoswap.ownerOf(93)).to.eq(ALICE_ADDRESS);
-      // Expect that alice's account has 0.073 (plus gas) less ETH in it
-      // await expect(aliceBalance.sub(await ethers.provider.getBalance(alice.address))).to.eq(
-      //   value.add(receipt.gasUsed.mul(receipt.effectiveGasPrice))
-      // )
     })
   })
 })

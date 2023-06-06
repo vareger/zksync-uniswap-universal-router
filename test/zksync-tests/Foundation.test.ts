@@ -1,7 +1,7 @@
 import FOUNDATION_ABI from './shared/abis/Foundation.json';
 import { Permit2 } from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE} from './shared/constants';
+import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS} from './shared/constants';
 import hre from 'hardhat';
 import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
@@ -43,7 +43,14 @@ describe('Foundation', () => {
       mockFoundation = new Contract(mockFoundation.address, MockFoundation.abi, alice);
 
       permit2 = (await deployPermit2()).connect(alice);
-      router = (await deployUniversalRouter(permit2, '', '', '', alice.address, '','', mockFoundation.address)).connect(alice); 
+      router = (await deployUniversalRouter(
+        permit2, 
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        mockFoundation.address
+      )).connect(alice); 
   })
 
   // In this test we will buy token id 32 of mental worlds NFT (0xEf96021Af16BD04918b0d87cE045d7984ad6c38c),

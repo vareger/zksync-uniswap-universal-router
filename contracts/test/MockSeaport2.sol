@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import "./MockERC721.sol";
 
 
-contract MockSeaport {
+contract MockSeaport2 {
 
 
 
@@ -14,12 +14,6 @@ contract MockSeaport {
         uint256 identifierOrCriteria;
         uint256 startAmount;
         uint256 endAmount;
-    }
-
-
-    struct FulfillmentComponent {
-        uint256 orderIndex;
-        uint256 itemIndex;
     }
 
 
@@ -37,7 +31,6 @@ contract MockSeaport {
         bytes signature;
     
     }
-
     struct OrderParameters {
         address offerer;
         address zone;
@@ -66,6 +59,11 @@ contract MockSeaport {
         uint256 index;
         uint256 identifier;
         bytes32[] criteriaProof;
+    }
+
+    struct FulfillmentComponent {
+        uint256 orderIndex;
+        uint256 itemIndex;
     }
 
     struct Execution {
@@ -102,8 +100,8 @@ contract MockSeaport {
         CONSIDERATION
     }
 
-    address public nftAddress;
-    address public alice;
+    address nftAddress;
+    address alice;
 
 
     constructor(address _nftAddress, address _alice)  {
@@ -122,35 +120,27 @@ contract MockSeaport {
     }
 
     function fulfillAdvancedOrder(AdvancedOrder memory advancedOrder, CriteriaResolver[] memory criteriaResolvers, bytes32 fulfillerConduitKey, address recipient) external payable returns (bool fulfilled){
-        MockERC721(nftAddress).transfer(alice, 8271);
         return true;
     }
 
     function fulfillAvailableAdvancedOrders(
         AdvancedOrder[] memory advancedOrders, 
         CriteriaResolver[] memory criteriaResolvers, 
-        FulfillmentComponent[][] memory offerFulfillments, 
+        FulfillmentComponent[][] memory offerFulfillments,
         FulfillmentComponent[][] memory considerationFulfillments, 
         bytes32 fulfillerConduitKey, 
         address recipient, 
         uint256 maximumFulfilled
-    ) external payable returns (bool[] memory availableOrders, Execution[] memory executions){
-        try MockERC721(nftAddress).transfer(alice, 8271) {
-        
-        } catch {
-        
-        }
-        
-        try MockERC721(nftAddress).transfer(alice, 6366) {
-        
-        } catch {
-        
-        }
+    ) external payable returns (
+        bool[] memory availableOrders, 
+        Execution[] memory executions) {
 
+        
+        
     }
+
 
     receive() external payable {
 
     }
 }
-

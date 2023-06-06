@@ -14,7 +14,7 @@ import { expect } from 'chai';
 
 
 /**
- * $ yarn hardhat test test/zksync-tests/Uniswap.test.ts --network zkSyncLocalhost
+ * $ yarn hardhat test test/zksync-tests/UniversalRouter.test.ts --network zkSyncLocalhost
  */
 describe('UniversalRouter Test:', () => {
     let provider: Provider;
@@ -42,7 +42,7 @@ describe('UniversalRouter Test:', () => {
         erc20 = await deployer.deploy(MockERC20, [18]);
         erc20 = new Contract(erc20.address, MockERC20.abi, alice);
         
-        erc1155 = await deployer.deploy(MockERC1155, []);
+        erc1155 = await deployer.deploy(MockERC1155, [alice.address]);
         erc1155 = new Contract(erc1155.address, MockERC1155.abi, alice);
 
         callback = await deployer.deploy(Callback, []);

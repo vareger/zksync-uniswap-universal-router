@@ -1,6 +1,6 @@
 import { CommandType, RoutePlanner } from './shared/planner';
 import { UniversalRouter, Permit2 } from '../../typechain';
-import { ALICE_ADDRESS, DEADLINE } from './shared/constants';
+import { ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS } from './shared/constants';
 import {
   ALICE_PRIVATE_KEY
 } from './shared/constants';
@@ -31,10 +31,18 @@ describe('Cryptopunks', () => {
     cryptopunks = await deployer.deploy(MockCryptopunks, [ALICE_ADDRESS]);
     cryptopunks = new Contract(cryptopunks.address, MockCryptopunks.abi, alice);
 
-    
-    
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
-    router = (await deployUniversalRouter(permit2, "","","","","", cryptopunks.address)).connect(alice) as UniversalRouter;
+    router = (await deployUniversalRouter(
+      permit2,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS, 
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,  
+      ZERO_ADDRESS,
+      ZERO_ADDRESS, 
+      ZERO_ADDRESS,
+      cryptopunks.address
+    )).connect(alice) as UniversalRouter;
   })
 
   describe('Buy 1 crypto punk', () => {

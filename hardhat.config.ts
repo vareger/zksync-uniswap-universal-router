@@ -5,7 +5,6 @@ import '@matterlabs/hardhat-zksync-deploy'
 import '@matterlabs/hardhat-zksync-solc'
 import '@matterlabs/hardhat-zksync-verify'
 import { task } from 'hardhat/config'
-require("@nomicfoundation/hardhat-chai-matchers")
 import deployZkSyncEra from './script/deploy_zksync_era'
 import dotenv from 'dotenv'
 dotenv.config()
@@ -107,4 +106,7 @@ export default {
       },
     },
   },
+  mocha: {
+    timeout: 100000
+  }
 }

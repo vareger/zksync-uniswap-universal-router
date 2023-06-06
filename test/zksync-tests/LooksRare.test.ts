@@ -1,6 +1,6 @@
 import { UniversalRouter, Permit2 } from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE} from './shared/constants';
+import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS} from './shared/constants';
 import hre from 'hardhat';
 import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
@@ -48,14 +48,25 @@ describe('LooksRare', () => {
     cryptoCovens = await deployer.deploy(MockERC721, [alice.address]);
     cryptoCovens = new Contract(cryptoCovens.address, MockERC721.abi, alice);
 
-    twerkyContract = await deployer.deploy(MockERC1155, []);
+    twerkyContract = await deployer.deploy(MockERC1155, [alice.address]);
     twerkyContract = new Contract(twerkyContract.address, MockERC1155.abi, alice);
 
     mockLooksRare = await deployer.deploy(MockLooksRare, []);
     mockLooksRare = new Contract(mockLooksRare.address, MockLooksRare.abi, alice);
 
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
-    router = (await deployUniversalRouter(permit2, '', '', '', '', '', '', '', '', mockLooksRare.address)).connect(alice) as UniversalRouter;
+    router = (await deployUniversalRouter(
+      permit2,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS, 
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,  
+      ZERO_ADDRESS,
+      ZERO_ADDRESS, 
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      mockLooksRare.address
+    )).connect(alice) as UniversalRouter;
     planner = new RoutePlanner();
   })
 
@@ -65,7 +76,7 @@ describe('LooksRare', () => {
     let tokenId: BigNumber;
 
     beforeEach(async () => {
-      ;({ makerOrder, takerOrder, value } = createLooksRareOrders(
+      ({ makerOrder, takerOrder, value } = createLooksRareOrders(
         looksRareOrders[LOOKS_RARE_721_ORDER],
         router.address
       ));

@@ -87,11 +87,10 @@ abstract contract V2SwapRouter is RouterImmutables, Permit2Payments {
         address[] memory path,
         address payer
     ) internal {
-        (uint256 amountIn, address firstPair) =
-            UniswapV2Library.getAmountInMultihop(UNISWAP_V2_FACTORY, UNISWAP_V2_PAIR_INIT_CODE_HASH, amountOut, path);
-        // if (amountIn > amountInMaximum) revert V2TooMuchRequested();
+        (uint256 amountIn, address firstPair) = UniswapV2Library.getAmountInMultihop(UNISWAP_V2_FACTORY, UNISWAP_V2_PAIR_INIT_CODE_HASH, amountOut, path);
+        if (amountIn > amountInMaximum) revert V2TooMuchRequested();
 
-        // payOrPermit2Transfer(path[0], payer, firstPair, amountIn);
-        // _v2Swap(path, recipient, firstPair);
+        payOrPermit2Transfer(path[0], payer, firstPair, amountIn);
+        _v2Swap(path, recipient, firstPair);
     }
 }

@@ -1,6 +1,6 @@
 import { UniversalRouter, Permit2} from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY, DEADLINE, OPENSEA_CONDUIT_KEY, ETH_ADDRESS} from './shared/constants';
+import { ALICE_PRIVATE_KEY, DEADLINE, OPENSEA_CONDUIT_KEY, ETH_ADDRESS, ZERO_ADDRESS} from './shared/constants';
 import hre from 'hardhat';
 import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
@@ -42,7 +42,11 @@ describe('Seaport', () => {
    
    
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
-    router = (await deployUniversalRouter(permit2, mockSeaport.address)).connect(alice) as UniversalRouter;
+    router = (await deployUniversalRouter(
+      permit2, 
+      ZERO_ADDRESS,
+      mockSeaport.address
+    )).connect(alice) as UniversalRouter;
     planner = new RoutePlanner();
   })
 
@@ -144,7 +148,11 @@ describe('Seaport', () => {
     
     let mockSeaport = await deployer.deploy(MockSeaportRevert, [mockERC721.address, alice.address])
     mockSeaport = new Contract(mockSeaport.address, MockSeaportRevert.abi, alice);
-    router = (await deployUniversalRouter(permit2, mockSeaport.address)).connect(alice) as UniversalRouter;
+    router = (await deployUniversalRouter(
+      permit2, 
+      ZERO_ADDRESS,
+      mockSeaport.address
+    )).connect(alice) as UniversalRouter;
     planner = new RoutePlanner();
 
     let invalidSeaportOrder = JSON.parse(JSON.stringify(seaportOrders[0]));

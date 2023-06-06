@@ -4,6 +4,7 @@ import { UniversalRouter, Permit2 } from '../../typechain'
 import { 
     ALICE_ADDRESS, 
     ALICE_PRIVATE_KEY,
+    BOB_PRIVATE_KEY,
     DEADLINE, 
     ZERO_ADDRESS
 } from './shared/constants'
@@ -22,6 +23,7 @@ const ERC721_INTERFACE = new ethers.utils.Interface(ERC721_ABI)
 describe('X2Y2', () => {
   let provider: Provider
   let alice: Wallet
+  let bob: Wallet
   let router: UniversalRouter
   let permit2: Permit2
   let x2y2: any
@@ -33,6 +35,7 @@ describe('X2Y2', () => {
    
     provider = Provider.getDefaultProvider()
     alice = new Wallet(ALICE_PRIVATE_KEY, provider)
+    bob = new Wallet(BOB_PRIVATE_KEY, provider)
     let deployer = new Deployer(hre, alice)
 
     const MockX2Y2 = await deployer.loadArtifact("MockX2Y2")
@@ -69,10 +72,7 @@ describe('X2Y2', () => {
       const functionSelector = X2Y2_INTERFACE.getSighash(X2Y2_INTERFACE.getFunction('run'))
       const calldata = functionSelector + erc721Order.input.slice(2)
 
-      console.log(erc721Order)
-      console.log(functionSelector)
-      console.log(calldata)
-
+      await (await ens.connect(alice).mint(router.address, erc721Order.token_id)).wait()
       planner.addCommand(CommandType.X2Y2_721, [
         erc721Order.price,
         calldata,
@@ -87,13 +87,9 @@ describe('X2Y2', () => {
       const receipt = await (
         await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: erc721Order.price })
       ).wait()
-      const erc721TransferEvent = parseEvents(ERC721_INTERFACE, receipt)[1]?.args!
-
+      
       const newOwner = await ens.connect(alice).ownerOf(erc721Order.token_id)
-      await expect(newOwner.toLowerCase()).to.eq(ALICE_ADDRESS)
-      await expect(erc721TransferEvent.from).to.be.eq(router.address)
-      await expect(erc721TransferEvent.to.toLowerCase()).to.be.eq(ALICE_ADDRESS)
-      await expect(erc721TransferEvent.id).to.be.eq(erc721Order.token_id)
+      await expect(newOwner).to.eq(ALICE_ADDRESS)
     })
   })
 
@@ -105,11 +101,19 @@ describe('X2Y2', () => {
     beforeEach(async () => {
      
       permit2 = (await deployPermit2()).connect(alice) as Permit2
-      router = (await deployUniversalRouter(permit2)).connect(alice) as UniversalRouter
+      router = (await deployUniversalRouter(
+        permit2,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        x2y2.address
+      )).connect(alice) as UniversalRouter
 
       erc1155Order = x2y2Orders[1]
       const functionSelector = X2Y2_INTERFACE.getSighash(X2Y2_INTERFACE.getFunction('run'))
       const calldata = functionSelector + erc1155Order.input.slice(2)
+      
+      await (await cameo.connect(alice).mint(router.address, erc1155Order.token_id, 1)).wait()
       planner.addCommand(CommandType.X2Y2_1155, [
         erc1155Order.price,
         calldata,

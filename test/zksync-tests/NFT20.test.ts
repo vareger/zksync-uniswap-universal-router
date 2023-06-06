@@ -1,6 +1,6 @@
 import { UniversalRouter, Permit2 } from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE} from './shared/constants';
+import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS} from './shared/constants';
 import hre from 'hardhat';
 import NFT20_ABI from './shared/abis/NFT20.json';
 import { BigNumber } from 'ethers';
@@ -36,7 +36,16 @@ describe('NFT20', () => {
 
 
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
-    router = (await deployUniversalRouter(permit2, '', '', '', '', '', '', '', mockAlphabetties.address)).connect(alice) as UniversalRouter;
+    router = (await deployUniversalRouter(
+      permit2, 
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      mockAlphabetties.address
+    )).connect(alice) as UniversalRouter;
     
     
   })
@@ -57,7 +66,6 @@ describe('NFT20', () => {
       planner.addCommand(CommandType.NFT20, [value, calldata]);
       const { commands, inputs } = planner;
 
-      //const aliceBalance = await ethers.provider.getBalance(alice.address)
       await (
         await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })
       ).wait();
@@ -66,10 +74,6 @@ describe('NFT20', () => {
       await expect(await mockAlphabetties.ownerOf(129)).to.eq(ALICE_ADDRESS);
       await expect(await mockAlphabetties.ownerOf(193)).to.eq(ALICE_ADDRESS);
       await expect(await mockAlphabetties.ownerOf(278)).to.eq(ALICE_ADDRESS);
-      // Expect that alice's account has 0.021 (plus gas, minus refund) less ETH in it
-      // await expect(aliceBalance.sub(await ethers.provider.getBalance(alice.address))).to.eq(
-      //   value.add(receipt.gasUsed.mul(receipt.effectiveGasPrice)).sub(BigNumber.from('1086067487962785'))
-      // )
     })
   })
 })

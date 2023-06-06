@@ -7,8 +7,9 @@ import {ERC721} from 'solmate/tokens/ERC721.sol';
 
 
 contract MockCryptopunks is ICryptoPunksMarket, ERC721 {
-    address router;
-    address alice;
+    address public router;
+    address public alice;
+    
     constructor( address _alice) ERC721('test', 'TEST') {
         alice = _alice;
     }
@@ -25,7 +26,7 @@ contract MockCryptopunks is ICryptoPunksMarket, ERC721 {
         _mint(alice, punkIndex);
     }
 
-    function punkIndexToAddress(uint256 punkIndex) external view returns(string memory alice) {
+    function punkIndexToAddress(uint256 punkIndex) external view returns(string memory _alice) {
         return "0x36615Cf349d7F6344891B1e7CA7C72883F5dc049";
 
     }
