@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import "./MockERC721.sol";
 
 
-contract MockSeaport {
+contract MockSeaportRevert {
 
 
 
@@ -16,12 +16,10 @@ contract MockSeaport {
         uint256 endAmount;
     }
 
-
     struct FulfillmentComponent {
         uint256 orderIndex;
         uint256 itemIndex;
     }
-
 
     struct ConsiderationItem {
         ItemType itemType;
@@ -37,7 +35,6 @@ contract MockSeaport {
         bytes signature;
     
     }
-
     struct ReceivedItem {
         ItemType itemType;
         address token;
@@ -50,7 +47,6 @@ contract MockSeaport {
         address offerer;
         bytes32 conduitKey;
     }
-
 
     struct OrderParameters {
         address offerer;
@@ -81,20 +77,6 @@ contract MockSeaport {
         uint256 identifier;
         bytes32[] criteriaProof;
     }
-
-    struct Execution {
-        ReceivedItem item;
-        address offerer;
-        bytes32 conduitKey;
-    }
-
-    struct ReceivedItem {
-        ItemType itemType;
-        address token;
-        uint256 identifier;
-        uint256 amount;
-        address recipient;
-    }
     
     enum ItemType{
         NATIVE,
@@ -116,8 +98,8 @@ contract MockSeaport {
         CONSIDERATION
     }
 
-    address public nftAddress;
-    address public alice;
+    address nftAddress;
+    address alice;
 
 
     constructor(address _nftAddress, address _alice)  {
@@ -137,34 +119,13 @@ contract MockSeaport {
 
     function fulfillAdvancedOrder(AdvancedOrder memory advancedOrder, CriteriaResolver[] memory criteriaResolvers, bytes32 fulfillerConduitKey, address recipient) external payable returns (bool fulfilled){
         MockERC721(nftAddress).transfer(alice, 8271);
-        return true;
+        bool _success = false;
+        require(_success, '0x8baa579f');
     }
 
-    function fulfillAvailableAdvancedOrders(
-        AdvancedOrder[] memory advancedOrders, 
-        CriteriaResolver[] memory criteriaResolvers, 
-        FulfillmentComponent[][] memory offerFulfillments, 
-        FulfillmentComponent[][] memory considerationFulfillments, 
-        bytes32 fulfillerConduitKey, 
-        address recipient, 
-        uint256 maximumFulfilled
-    ) external payable returns (bool[] memory availableOrders, Execution[] memory executions){
-        try MockERC721(nftAddress).transfer(alice, 8271) {
-        
-        } catch {
-        
-        }
-        
-        try MockERC721(nftAddress).transfer(alice, 6366) {
-        
-        } catch {
-        
-        }
-
-    }
-
-    receive() external payable {
+    function fulfillAvailableAdvancedOrders(AdvancedOrder[] memory advancedOrders, CriteriaResolver[] memory criteriaResolvers, FulfillmentComponent[][] memory offerFulfillments, FulfillmentComponent[][] memory considerationFulfillments, bytes32 fulfillerConduitKey, address recipient, uint256 maximumFulfilled) external payable returns (bool[] memory availableOrders, Execution[] memory executions){
+        MockERC721(nftAddress).transfer(alice, 8271);
+        MockERC721(nftAddress).transfer(alice, 6366);
 
     }
 }
-

@@ -5,6 +5,7 @@ import '@matterlabs/hardhat-zksync-deploy'
 import '@matterlabs/hardhat-zksync-solc'
 import '@matterlabs/hardhat-zksync-verify'
 import { task } from 'hardhat/config'
+require("@nomicfoundation/hardhat-chai-matchers")
 import deployZkSyncEra from './script/deploy_zksync_era'
 import dotenv from 'dotenv'
 dotenv.config()
@@ -33,12 +34,15 @@ const DEFAULT_COMPILER_SETTINGS = {
 }
 
 export default {
+  defaultNetwork: "zkSyncLocalhost",
+  allowUnlimitedContractSize: true,
+  
   paths: {
     sources: './contracts',
   },
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: false,
+      allowUnlimitedContractSize: true,
       chainId: 1,
       forking: {
         url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -76,7 +80,11 @@ export default {
       url: "http://localhost:3050",
       ethNetwork: "http://localhost:8545",
       zksync: true,
+      allowUnlimitedContractSize: true,
+      gas: 36000000000000000000000000000000000,
+      gasPrice: 100000000000000000000000000000
     },
+    
     zkSyncTestnet: {
       url: "https://testnet.era.zksync.dev",
       ethNetwork: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,

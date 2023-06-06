@@ -1,4 +1,4 @@
-import { UniversalRouter, Permit2, ERC20, MockLooksRareRewardsDistributor, ERC721 } from '../../typechain'
+import { UniversalRouter, ERC1155, Permit2, ERC20, MockLooksRareRewardsDistributor, ERC721 } from '../../typechain'
 import { BigNumber, BigNumberish } from 'ethers'
 import { Pair } from '@uniswap/v2-sdk'
 import { expect } from './shared/expect'

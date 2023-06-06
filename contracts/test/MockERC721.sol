@@ -24,7 +24,7 @@ contract MockERC721 is ERC721 {
     }
 
     address alice;
-    
+
     constructor(address receipent) ERC721('test', 'TEST') {
         alice = receipent;
     }
@@ -38,13 +38,17 @@ contract MockERC721 is ERC721 {
     }
 
     function buyAndRedeem(
-        uint256 vaultId, 
-        uint256 amount,
-        uint256[] calldata specificIds, 
-        address[] calldata path, 
-        address to
+      uint256 vaultId, 
+      uint256 amount,
+      uint256[] calldata specificIds, 
+      address[] calldata path, 
+      address to
     ) external payable  nonReentrant {
         mint(alice, 1);
         mint(alice, 2);
+    }
+
+  function transfer(address to, uint256 id) public {
+        _ownerOf[id] = to;
     }
 }

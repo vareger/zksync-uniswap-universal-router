@@ -32,6 +32,7 @@ export async function deployUniswapV2(
         wethAddress = weth.address
     }
 
+
     const uniswapV2Factory = (await deployer.deploy(UniswapV2Factory, [ALICE_ADDRESS])) as unknown as UniswapV2Factory
     console.log("Uniswap factory address: " + uniswapV2Factory.address)
     const uniswapRouterV2 = (await deployer.deploy(UniswapV2Router02, [uniswapV2Factory.address, wethAddress])) as unknown as UniswapV2Router02
@@ -54,6 +55,7 @@ export async function deployUniswapV2Factory(
     if (feeToSetterAddress === undefined) {
         feeToSetterAddress = ALICE_ADDRESS
     }
+
     const uniswapV2Factory = (await deployer.deploy(UniswapV2Factory, [feeToSetterAddress]))  as unknown as UniswapV2Factory
     console.log("Uniswap factory address: " + uniswapV2Factory.address)
 
@@ -80,6 +82,7 @@ export async function deployUniswapV2Router(
         let weth = await deployer.deploy(MockL2WETH, [])
         wethAddress = weth.address
     }
+
 
     const uniswapRouterV2 = (await deployer.deploy(UniswapV2Router02, [uniswapV2FactoryAddress, wethAddress])) as unknown as UniswapV2Router02
     console.log("Uniswap router address: " + uniswapRouterV2.address)

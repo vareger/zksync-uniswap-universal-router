@@ -1,7 +1,7 @@
 import hre from 'hardhat'
 // const { ethers } = hre
-import { UniversalRouter, Permit2 } from '../../../typechain'
-import { Wallet, Provider } from 'zksync-web3'
+import {  Permit2, UniversalRouter } from '../../../typechain'
+import { Wallet, Provider, Contract } from 'zksync-web3'
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy'
 
 import {
@@ -32,6 +32,7 @@ export async function deployRouter(
     mockLooksRareRewardsDistributor?: string,
     mockLooksRareToken?: string
 ): Promise<UniversalRouter> {
+    
     mockLooksRareRewardsDistributor
     mockLooksRareToken
     const routerParameters = {
@@ -53,7 +54,7 @@ export async function deployRouter(
         pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,
         poolInitCodeHash: V3_INIT_CODE_HASH_MAINNET,
     }
-    console.log(`Running deploy script for the UniversalRouter contract`)
+    //console.log(`Running deploy script for the UniversalRouter contract`)
 
     // Initialize the wallet.
     const provider = Provider.getDefaultProvider()
@@ -86,7 +87,7 @@ export async function deployMockPermit2(): Promise<Permit2> {
 }
 
 export async function deployPermit2(): Promise<Permit2> {
-    console.log(`Running deploy script for the Permit2 contract`)
+    //console.log(`Running deploy script for the Permit2 contract`)
 
     // Initialize the wallet.
     const provider = Provider.getDefaultProvider()
