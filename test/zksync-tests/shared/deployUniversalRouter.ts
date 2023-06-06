@@ -48,8 +48,8 @@ export async function deployRouter(
         routerRewardsDistributor: routerRewardsDistributorAddress || ZERO_ADDRESS,
         looksRareRewardsDistributor: looksRareRewardsDistributorAddress || ZERO_ADDRESS,
         looksRareToken: looksRareTokenAddress || ZERO_ADDRESS,
-        v2Factory: v2FactoryAddress,
-        v3Factory: V3_FACTORY_MAINNET,
+        v2Factory: v2FactoryAddress || ZERO_ADDRESS,
+        v3Factory: v3FactoryAddress || ZERO_ADDRESS,
         pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,
         poolInitCodeHash: V3_INIT_CODE_HASH_MAINNET,
     }
