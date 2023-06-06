@@ -157,7 +157,7 @@ describe('UniversalRouter', () => {
     await(await wethContract.connect(alice).deposit({value: expandTo18DecimalsBN(1_000_000)})).wait();
   })
 
-  describe.skip('#execute', () => {
+  describe('#execute', () => {
     let planner: RoutePlanner;
 
     beforeEach(async () => {
@@ -226,7 +226,7 @@ describe('UniversalRouter', () => {
     })
   })
   
-  describe.skip('partial fills', async () => {
+  describe('partial fills', async () => {
     let nftxValue: BigNumber;
     let numCovens: number;
     let value: BigNumber;
@@ -332,7 +332,7 @@ describe('UniversalRouter', () => {
   })
   
 
-  describe.skip('#collectRewards', () => {
+  describe('#collectRewards', () => {
     let amountRewards: BigNumberish;
     beforeEach(async () => {
       amountRewards = expandTo18DecimalsBN(0.5);
