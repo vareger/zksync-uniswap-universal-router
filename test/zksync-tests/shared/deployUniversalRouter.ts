@@ -15,36 +15,42 @@ import {
 
 export async function deployRouter(
     permit2: Permit2,
+    weth9Address?: string,
     seaportAddress?: string,
-    nftxAddress?: string,
-    mockERC20Address?: string,
-    aliceAddress?: string,
-    mockLooksRareRewardsDistributor?: string,
-    cryptopunksAddress?: string,
-    mockFoundationAddress?: string,
-    nft20ZapAddress?: string,
-    looksRareAddress?: string,
+    nftxZapAddress?: string,
+    x2y2Address?: string,
+    foundationAddress?: string,
     sudoswapAddress?: string,
-    v2FactoryAddress?: string
+    nft20ZapAddress?: string,
+    cryptopunksAddress?: string,
+    looksRareAddress?: string,
+    routerRewardsDistributorAddress?: string,
+    looksRareRewardsDistributorAddress?: string,
+    looksRareTokenAddress?: string,
+    v2FactoryAddress?: string,
+    v3FactoryAddress?: string,
+    mockLooksRareRewardsDistributor?: string,
+    mockLooksRareToken?: string
 ): Promise<UniversalRouter> {
     
-    
+    mockLooksRareRewardsDistributor
+    mockLooksRareToken
     const routerParameters = {
-        permit2: permit2.address,
-        weth9: ZERO_ADDRESS,
+        permit2: permit2.address || ZERO_ADDRESS,
+        weth9: weth9Address || ZERO_ADDRESS,
         seaport: seaportAddress || ZERO_ADDRESS,
-        nftxZap: nftxAddress || ZERO_ADDRESS,
-        x2y2: ZERO_ADDRESS,
-        foundation: mockFoundationAddress || ZERO_ADDRESS,
+        nftxZap: nftxZapAddress || ZERO_ADDRESS,
+        x2y2: x2y2Address || ZERO_ADDRESS,
+        foundation: foundationAddress || ZERO_ADDRESS,
         sudoswap: sudoswapAddress || ZERO_ADDRESS,
         nft20Zap: nft20ZapAddress || ZERO_ADDRESS,
         cryptopunks: cryptopunksAddress || ZERO_ADDRESS,
         looksRare: looksRareAddress || ZERO_ADDRESS,
-        routerRewardsDistributor: aliceAddress || ZERO_ADDRESS,
-        looksRareRewardsDistributor: mockLooksRareRewardsDistributor || ZERO_ADDRESS,
-        looksRareToken: mockERC20Address || ZERO_ADDRESS,
+        routerRewardsDistributor: routerRewardsDistributorAddress || ZERO_ADDRESS,
+        looksRareRewardsDistributor: looksRareRewardsDistributorAddress || ZERO_ADDRESS,
+        looksRareToken: looksRareTokenAddress || ZERO_ADDRESS,
         v2Factory: v2FactoryAddress || ZERO_ADDRESS,
-        v3Factory: V3_FACTORY_MAINNET,
+        v3Factory: v3FactoryAddress || ZERO_ADDRESS,
         pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,
         poolInitCodeHash: V3_INIT_CODE_HASH_MAINNET,
     }
@@ -63,6 +69,22 @@ export async function deployRouter(
 }
 
 export default deployRouter
+
+export async function deployMockPermit2(): Promise<Permit2> {
+    console.log(`Running deploy script for the Permit2 contract`)
+
+    // Initialize the wallet.
+    const provider = Provider.getDefaultProvider()
+    const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
+
+    // Create deployer object and load the artifact of the contract you want to deploy.
+    const deployer = new Deployer(hre, wallet)
+    const artifact = await deployer.loadArtifact('MockPermit2')
+
+    const permit2 = (await deployer.deploy(artifact, [])) as unknown as Permit2
+    
+    return permit2
+}
 
 export async function deployPermit2(): Promise<Permit2> {
     //console.log(`Running deploy script for the Permit2 contract`)
@@ -85,6 +107,6 @@ export async function deployRouterAndPermit2(
     mockLooksRareToken?: string
 ): Promise<[UniversalRouter, Permit2]> {
     const permit2 = await deployPermit2()
-    const router = await deployRouter(permit2, mockLooksRareRewardsDistributor, mockLooksRareToken)
+    const router = await deployRouter(permit2, ZERO_ADDRESS, ZERO_ADDRESS, mockLooksRareRewardsDistributor, mockLooksRareToken)
     return [router, permit2]
 }

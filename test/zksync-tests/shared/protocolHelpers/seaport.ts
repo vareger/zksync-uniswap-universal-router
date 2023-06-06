@@ -1,4 +1,4 @@
-import SEAPORT_ABI from '../abis/Seaport.json'
+import SEAPORT_ABI from './abis/Seaport.json'
 import { BigNumber, BigNumberish } from 'ethers'
 import { expandTo18DecimalsBN } from '../helpers'
 import { OPENSEA_CONDUIT_KEY } from '../constants'
@@ -7,7 +7,7 @@ import hre from 'hardhat'
 const { ethers } = hre
 
 export const seaportOrders = JSON.parse(
-  fs.readFileSync('test/integration-tests/shared/orders/Seaport.json', { encoding: 'utf8' })
+  fs.readFileSync('test/zksync-tests/shared/protocolHelpers/orders/Seaport.json', { encoding: 'utf8' })
 )
 export const seaportInterface = new ethers.utils.Interface(SEAPORT_ABI)
 

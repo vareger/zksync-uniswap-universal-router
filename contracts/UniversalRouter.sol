@@ -7,6 +7,7 @@ import {RouterParameters, RouterImmutables} from './base/RouterImmutables.sol';
 import {Constants} from './libraries/Constants.sol';
 import {Commands} from './libraries/Commands.sol';
 import {IUniversalRouter} from './interfaces/IUniversalRouter.sol';
+import {UniswapV2Library} from './modules/uniswap/v2/UniswapV2Library.sol';
 
 contract UniversalRouter is RouterImmutables, IUniversalRouter, Dispatcher, RewardsCollector {
     modifier checkDeadline(uint256 deadline) {
@@ -48,6 +49,18 @@ contract UniversalRouter is RouterImmutables, IUniversalRouter, Dispatcher, Rewa
                 commandIndex++;
             }
         }
+    }
+
+    function getUniswapV2Factory() public view returns (address) {
+        return UNISWAP_V2_FACTORY;
+    }
+
+    function getWETH9() public view returns (address) {
+        return address(WETH9);
+    }
+
+    function pairFor(address factory, bytes32 initCodeHash, address tokenA, address tokenB) public view returns(address) {
+        return UniswapV2Library.pairFor(factory, initCodeHash, tokenA, tokenB);
     }
 
     function successRequired(bytes1 command) internal pure returns (bool) {

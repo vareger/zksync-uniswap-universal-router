@@ -20,3 +20,4 @@ export function parseEvents(iface: Interface, receipt: TransactionReceipt): (Log
     })
     .filter((n: LogDescription | undefined) => n)
 }
+

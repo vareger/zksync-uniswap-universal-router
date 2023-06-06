@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import {ERC721} from 'solmate/tokens/ERC721.sol';
 
-contract MockERC721 is ERC721 {
+contract MockENS721 is ERC721 {
 
     uint256 private _status;
     uint256 private constant _ENTERED = 2;
@@ -23,8 +23,8 @@ contract MockERC721 is ERC721 {
         _status = _NOT_ENTERED;
     }
 
-    address alice;
-
+    address public alice;
+    
     constructor(address receipent) ERC721('test', 'TEST') {
         alice = receipent;
     }
@@ -37,18 +37,4 @@ contract MockERC721 is ERC721 {
         _mint(to, id);
     }
 
-    function buyAndRedeem(
-      uint256 vaultId, 
-      uint256 amount,
-      uint256[] calldata specificIds, 
-      address[] calldata path, 
-      address to
-    ) external payable  nonReentrant {
-        mint(alice, 1);
-        mint(alice, 2);
-    }
-
-  function transfer(address to, uint256 id) public {
-        _ownerOf[id] = to;
-    }
 }

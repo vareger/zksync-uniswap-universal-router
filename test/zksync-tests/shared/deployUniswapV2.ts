@@ -32,9 +32,10 @@ export async function deployUniswapV2(
         wethAddress = weth.address
     }
 
-    const uniswapV2Factory = (await deployer.deploy(UniswapV2Factory, [ALICE_ADDRESS])) as UniswapV2Factory
+
+    const uniswapV2Factory = (await deployer.deploy(UniswapV2Factory, [ALICE_ADDRESS])) as unknown as UniswapV2Factory
     console.log("Uniswap factory address: " + uniswapV2Factory.address)
-    const uniswapRouterV2 = (await deployer.deploy(UniswapV2Router02, [uniswapV2Factory.address, wethAddress])) as UniswapV2Router02
+    const uniswapRouterV2 = (await deployer.deploy(UniswapV2Router02, [uniswapV2Factory.address, wethAddress])) as unknown as UniswapV2Router02
     console.log("Uniswap router address: " + uniswapRouterV2.address)
 
     return [uniswapV2Factory, uniswapRouterV2]
@@ -54,7 +55,8 @@ export async function deployUniswapV2Factory(
     if (feeToSetterAddress === undefined) {
         feeToSetterAddress = ALICE_ADDRESS
     }
-    const uniswapV2Factory = (await deployer.deploy(UniswapV2Factory, [feeToSetterAddress])) as UniswapV2Factory
+
+    const uniswapV2Factory = (await deployer.deploy(UniswapV2Factory, [feeToSetterAddress]))  as unknown as UniswapV2Factory
     console.log("Uniswap factory address: " + uniswapV2Factory.address)
 
     return uniswapV2Factory
@@ -81,7 +83,8 @@ export async function deployUniswapV2Router(
         wethAddress = weth.address
     }
 
-    const uniswapRouterV2 = (await deployer.deploy(UniswapV2Router02, [uniswapV2FactoryAddress, wethAddress])) as UniswapV2Router02
+
+    const uniswapRouterV2 = (await deployer.deploy(UniswapV2Router02, [uniswapV2FactoryAddress, wethAddress])) as unknown as UniswapV2Router02
     console.log("Uniswap router address: " + uniswapRouterV2.address)
     return uniswapRouterV2
 }
