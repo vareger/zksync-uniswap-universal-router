@@ -75,7 +75,7 @@ describe('UniversalRouter', () => {
     const MintableERC20 = await deployer.loadArtifact("MintableERC20");
     const MockLooksRareRewardsDistributor = await deployer.loadArtifact('MockLooksRareRewardsDistributor');
     const MockCryptoCovens = await deployer.loadArtifact("MockCryptoCovens")
-    const MockSeaport = await deployer.loadArtifact('MockSeaport');    
+    const MockSeaport = await deployer.loadArtifact('MockSeaport3');    
     const MockERC721 = await deployer.loadArtifact('MockERC721');
 
     cryptoCovens = await deployer.deploy(MockCryptoCovens, [alice.address]) as unknown as ERC721
@@ -167,7 +167,9 @@ describe('UniversalRouter', () => {
       await daiContract.mint(router.address, 1000000);
       await daiContract.mint(permit2.address, 1000000);
       await daiContract.approve(permit2.address, MAX_UINT);
+      await wethContract.approve(permit2.address, MAX_UINT);
       await permit2.approve(daiContract.address, router.address, MAX_UINT160, DEADLINE);
+      await permit2.approve(wethContract.address, router.address, MAX_UINT160, DEADLINE);
     })
 
     it('reverts if block.timestamp exceeds the deadline', async () => {
@@ -317,15 +319,11 @@ describe('UniversalRouter', () => {
         [daiContract.address, wethContract.address],
         SOURCE_MSG_SENDER,
       ])
-      // planner.addCommand(CommandType.UNWRAP_WETH, [ADDRESS_THIS, CONTRACT_BALANCE]);
-      // planner.addCommand(CommandType.SEAPORT, [value.toString(), calldata]);
+      planner.addCommand(CommandType.UNWRAP_WETH, [ADDRESS_THIS, value]);
+      planner.addCommand(CommandType.SEAPORT, [value.toString(), calldata]);
       const { commands, inputs } = planner;
       const covenBalanceBefore = await cryptoCovens.balanceOf(alice.address);
-      const wethBalanceBefore = await wethContract.balanceOf(router.address)
       await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, {value})).wait();
-      const wethBalanceAfter = await wethContract.balanceOf(router.address)
-      console.log(wethBalanceBefore)
-      console.log(wethBalanceAfter)
       const covenBalanceAfter = await cryptoCovens.balanceOf(alice.address);
       expect(covenBalanceAfter.sub(covenBalanceBefore)).to.eq(1);
     })
