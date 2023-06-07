@@ -1,17 +1,15 @@
 import { UniversalRouter, Permit2, ERC721, UniswapV2Factory, UniswapV2Router02 } from '../../typechain';
 import { BigNumber, BigNumberish } from 'ethers';
-import { Pair } from '@uniswap/v2-sdk';
-import JSBI from 'jsbi';
 import {
-  ALICE_PRIVATE_KEY, CONTRACT_BALANCE, OPENSEA_CONDUIT_KEY, ZERO_ADDRESS,
+  ALICE_PRIVATE_KEY, OPENSEA_CONDUIT_KEY, ZERO_ADDRESS,
   
 } from './shared/constants';
-import NFTX_ZAP_ABI from './shared/abis/NFTXZap.json'
+import NFTX_ZAP_ABI from './shared/abis/NFTXZap.json';
 import { Wallet, Provider, Contract } from 'zksync-web3';
 
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 import { deployPermit2, deployRouter} from './shared/deployUniversalRouter';
-import {deployUniswapV2} from './shared/deployUniswapV2'
+import {deployUniswapV2} from './shared/deployUniswapV2';
 
 import "@matterlabs/hardhat-zksync-chai-matchers";
 import { expect } from 'chai';
@@ -58,8 +56,8 @@ describe('UniversalRouter', () => {
   let mockLooksRareRewardsDistributor: Contract;
   let pair_DAI_WETH: string;
 
-  let uniswapV2Factory: UniswapV2Factory
-  let uniswapV2Router: UniswapV2Router02
+  let uniswapV2Factory: UniswapV2Factory;
+  let uniswapV2Router: UniswapV2Router02;
   
   let cryptoCovens: ERC721;
   let deployer: Deployer;
@@ -78,7 +76,7 @@ describe('UniversalRouter', () => {
     const MockSeaport = await deployer.loadArtifact('MockSeaport3');    
     const MockERC721 = await deployer.loadArtifact('MockERC721');
 
-    cryptoCovens = await deployer.deploy(MockCryptoCovens, [alice.address]) as unknown as ERC721
+    cryptoCovens = await deployer.deploy(MockCryptoCovens, [alice.address]) as unknown as ERC721;
 
     // mock rewards contracts
     mockLooksRareToken = await deployer.deploy(MintableERC20, [expandTo18DecimalsBN(5)]);
@@ -87,28 +85,28 @@ describe('UniversalRouter', () => {
     mockLooksRareRewardsDistributor = await deployer.deploy(MockLooksRareRewardsDistributor, [ROUTER_REWARDS_DISTRIBUTOR, mockLooksRareToken.address]);
     mockLooksRareRewardsDistributor = new Contract(mockLooksRareRewardsDistributor.address, MockLooksRareRewardsDistributor.abi, alice);
 
-    daiContract = await deployer.deploy(MintableERC20, [expandTo18DecimalsBN(900_000)]) as Contract
+    daiContract = await deployer.deploy(MintableERC20, [expandTo18DecimalsBN(900_000)]) as Contract;
    
-    wethContract = await deployer.deploy(MockL2WETH, []) as Contract
+    wethContract = await deployer.deploy(MockL2WETH, []) as Contract;
    
-    const uniswapV2 = await deployUniswapV2(wethContract.address)
+    const uniswapV2 = await deployUniswapV2(wethContract.address);
 
-    uniswapV2Factory = uniswapV2[0]
-    uniswapV2Router = uniswapV2[1]
+    uniswapV2Factory = uniswapV2[0];
+    uniswapV2Router = uniswapV2[1];
 
-    let tokenA = daiContract.address
-    let tokenB = wethContract.address
-    let amountADesired = expandTo18DecimalsBN(10_000_000)
-    let amountBDesired = expandTo18DecimalsBN(100_000)
-    let amountAMin = amountADesired
-    let amountBMin = amountBDesired
-    let to = alice.address
+    let tokenA = daiContract.address;
+    let tokenB = wethContract.address;
+    let amountADesired = expandTo18DecimalsBN(10_000_000);
+    let amountBDesired = expandTo18DecimalsBN(100_000);
+    let amountAMin = amountADesired;
+    let amountBMin = amountBDesired;
+    let to = alice.address;
     let deadline = Math.round((new Date()).getTime()/1000)+86400;
-    await (await daiContract.connect(alice).mint(alice.address, amountADesired)).wait()
-    await (await wethContract.connect(alice).deposit({value: amountBDesired})).wait()
+    await (await daiContract.connect(alice).mint(alice.address, amountADesired)).wait();
+    await (await wethContract.connect(alice).deposit({value: amountBDesired})).wait();
 
-    await (await daiContract.connect(alice).approve(uniswapV2Router.address, MAX_UINT)).wait()
-    await (await wethContract.connect(alice).approve(uniswapV2Router.address, MAX_UINT)).wait()
+    await (await daiContract.connect(alice).approve(uniswapV2Router.address, MAX_UINT)).wait();
+    await (await wethContract.connect(alice).approve(uniswapV2Router.address, MAX_UINT)).wait();
 
     await (await uniswapV2Router.connect(alice).addLiquidity(
         tokenA,
@@ -119,18 +117,18 @@ describe('UniversalRouter', () => {
         amountBMin,
         to,
         deadline
-    )).wait()
+    )).wait();
 
-    let reserves = await uniswapV2Router.getReserves(tokenA, tokenB)
+    let reserves = await uniswapV2Router.getReserves(tokenA, tokenB);
 
-    expect(reserves[0]).to.be.eq(amountADesired)
-    expect(reserves[1]).to.be.eq(amountBDesired)
+    expect(reserves[0]).to.be.eq(amountADesired);
+    expect(reserves[1]).to.be.eq(amountBDesired);
 
     pairAddress = await uniswapV2Factory.getPair(daiContract.address, wethContract.address);
-    console.log("pairAddress: " + pairAddress)
-    pair_DAI_WETH = pairAddress
+    // console.log("pairAddress: " + pairAddress);
+    pair_DAI_WETH = pairAddress;
 
-    mockERC721 = await deployer.deploy(MockERC721, [alice.address]) as Contract
+    mockERC721 = await deployer.deploy(MockERC721, [alice.address]) as Contract;
     
     mockSeaport = await deployer.deploy(MockSeaport, [cryptoCovens.address, alice.address]) as Contract;
    
@@ -288,11 +286,11 @@ describe('UniversalRouter', () => {
 
   describe('ERC20 --> NFT', () => {
     let value: BigNumber;
-    let advancedOrder: AdvancedOrder
+    let advancedOrder: AdvancedOrder;
     let planner: RoutePlanner;
 
     beforeEach(async () => {
-      ;({ advancedOrder, value } = getAdvancedOrderParams(seaportOrders[0]))
+      ;({ advancedOrder, value } = getAdvancedOrderParams(seaportOrders[0]));
     })
 
     it('completes a trade for ERC20 --> ETH --> Seaport NFT', async () => {
@@ -303,13 +301,13 @@ describe('UniversalRouter', () => {
         [],
         OPENSEA_CONDUIT_KEY,
         alice.address,
-      ])
+      ]);
 
      
-      await (await daiContract.connect(alice).approve(router.address, maxAmountIn)).wait()
-      await (await permit2.connect(alice).approve(daiContract.address, router.address, MAX_UINT160, DEADLINE)).wait()
+      await (await daiContract.connect(alice).approve(router.address, maxAmountIn)).wait();
+      await (await permit2.connect(alice).approve(daiContract.address, router.address, MAX_UINT160, DEADLINE)).wait();
       
-      await (await daiContract.mint(router.address, expandTo18DecimalsBN(1_000_000))).wait()
+      await (await daiContract.mint(router.address, expandTo18DecimalsBN(1_000_000))).wait();
 
       planner = new RoutePlanner();
       planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
@@ -318,7 +316,7 @@ describe('UniversalRouter', () => {
         maxAmountIn,
         [daiContract.address, wethContract.address],
         SOURCE_MSG_SENDER,
-      ])
+      ]);
       planner.addCommand(CommandType.UNWRAP_WETH, [ADDRESS_THIS, value]);
       planner.addCommand(CommandType.SEAPORT, [value.toString(), calldata]);
       const { commands, inputs } = planner;

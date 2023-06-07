@@ -52,7 +52,7 @@ describe('Seaport', () => {
 
   it('completes a fulfillAdvancedOrder type', async () => {
     const { advancedOrder, value } = getAdvancedOrderParams(seaportOrders[0]);
-    const params = advancedOrder.parameters
+    const params = advancedOrder.parameters;
     const calldata = seaportInterface.encodeFunctionData('fulfillAdvancedOrder', [
       advancedOrder,
       [],
@@ -146,7 +146,7 @@ describe('Seaport', () => {
   it('reverts if order does not go through', async () => {
     const MockSeaportRevert = await deployer.loadArtifact('MockSeaportRevert');    
     
-    let mockSeaport = await deployer.deploy(MockSeaportRevert, [mockERC721.address, alice.address])
+    let mockSeaport = await deployer.deploy(MockSeaportRevert, [mockERC721.address, alice.address]);
     mockSeaport = new Contract(mockSeaport.address, MockSeaportRevert.abi, alice);
     router = (await deployUniversalRouter(
       permit2, 

@@ -57,10 +57,7 @@ describe('Cryptopunks', () => {
       // Expect that alice has the NFT
       let testAddress = await cryptopunks.punkIndexToAddress(2976);
       await expect(testAddress).to.eq(ALICE_ADDRESS);
-      // gas test
-      // await expect(aliceBalance.sub(await ethers.provider.getBalance(alice.address))).to.eq(
-      //   value.add(receipt.gasUsed.mul(receipt.effectiveGasPrice))
-      // )
+      
     })
   })
 })

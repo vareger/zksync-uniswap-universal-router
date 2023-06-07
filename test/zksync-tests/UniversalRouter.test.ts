@@ -54,7 +54,7 @@ describe('UniversalRouter Test:', () => {
         permit2 = (await deployPermit2()).connect(alice) as Permit2;
         router = (await deployRouter(permit2)).connect(alice) as UniversalRouter;
         
-        await erc20.connect(alice).mint(alice.address, expandTo18DecimalsBN(1));
+        await (await erc20.connect(alice).mint(alice.address, expandTo18DecimalsBN(1))).wait();
         
         
         planner = new RoutePlanner();
@@ -79,12 +79,12 @@ describe('UniversalRouter Test:', () => {
     it('testSweepTokenInsufficientOutput', async () => {
         await(await erc20.connect(alice).mint(router.address, expandTo18DecimalsBN(1))).wait();
         
-        await expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('1000000000000000000');
+        expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('1000000000000000000');
         
       
         planner.addCommand(CommandType.SWEEP, [erc20.address, alice.address, expandTo18DecimalsBN(2)]);
         const { commands, inputs } = planner;
-        await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(router, 'InsufficientToken');;
+        await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(router, 'InsufficientToken');
     
         
         

@@ -101,12 +101,12 @@ describe('LooksRare', () => {
   })
 
   describe('ERC-1155 Purchase', () => {
-    let takerOrder: TakerOrder
-    let makerOrder: MakerOrder
-    let tokenId: BigNumber
-    let value: BigNumber
-    let commands: string
-    let inputs: string[]
+    let takerOrder: TakerOrder;
+    let makerOrder: MakerOrder;
+    let tokenId: BigNumber;
+    let value: BigNumber;
+    let commands: string;
+    let inputs: string[];
 
     beforeEach(async () => {
       ;({ makerOrder, takerOrder, value } = createLooksRareOrders(

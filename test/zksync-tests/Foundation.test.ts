@@ -53,8 +53,6 @@ describe('Foundation', () => {
       )).connect(alice); 
   })
 
-  // In this test we will buy token id 32 of mental worlds NFT (0xEf96021Af16BD04918b0d87cE045d7984ad6c38c),
-  // which costs 0.01 ETH
   describe('Buy a mental worlds NFT from Foundation', () => {
     beforeEach(async () => {
       await(await mentalWorld.mint(router.address, 32)).wait();
@@ -66,20 +64,12 @@ describe('Foundation', () => {
       planner.addCommand(CommandType.FOUNDATION, [value, calldata, ALICE_ADDRESS, mentalWorld.address, 32]);
       const { commands, inputs } = planner;
 
-      //const aliceBalance = await ethers.provider.getBalance(alice.address)
       await expect(
         await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })
       ).to.changeEtherBalance(REFERRER, BigInt("+10000000000000000000"));
      
       
-      // Expect that alice has the NFT
       await expect(await mentalWorld.connect(alice).ownerOf(32)).to.eq(ALICE_ADDRESS);
-      // Expect that alice's account has 0.01 (plus gas) less ETH in it
-      // await expect(aliceBalance.sub(await ethers.provider.getBalance(alice.address))).to.eq(
-      //   value.add(receipt.gasUsed.mul(receipt.effectiveGasPrice))
-      // )
-      // Expect that referrer's account has 0.0001 more ETH in it (referrers receive 1% of NFT value)
-      //await expect((await ethers.provider.getBalance(REFERRER)).sub(referrerBalance)).to.eq(value.div(100))
-    })
+     })
   })
 })

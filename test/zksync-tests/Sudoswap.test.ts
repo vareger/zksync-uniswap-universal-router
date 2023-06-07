@@ -52,7 +52,7 @@ describe('Sudoswap', () => {
   describe('Buy 3 sudolets from sudoswap', () => {
 
     it('purchases token ids 80, 35, 93 of Sudolets', async () => {
-      const value = BigNumber.from('73337152777777783')
+      const value = BigNumber.from('73337152777777783');
       const calldata = SUDOSWAP_INTERFACE.encodeFunctionData('robustSwapETHForSpecificNFTs', [
         [[['0x339e7004372e04b1d59443f0ddc075efd9d80360', ['80', '35', '93']], '73337152777777783']],
         ALICE_ADDRESS,
