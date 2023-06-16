@@ -71,6 +71,7 @@
     "prettier": "prettier --check '**/*.ts' && forge fmt --check"
   },
   "dependencies": {
-    "@openzeppelin/test-helpers": "^0.5.16"
+    "@openzeppelin/test-helpers": "^0.5.16",
+    "base64-sol": "1.0.1"
   }
 }

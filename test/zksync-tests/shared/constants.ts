@@ -1,5 +1,6 @@
 import hre from 'hardhat'
 const { ethers } = hre
+import { BigNumber } from 'ethers'
 
 // Router Helpers
 export const MAX_UINT = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
@@ -22,7 +23,7 @@ export const SOURCE_ROUTER: boolean = false
 // Constructor Params
 export const V2_FACTORY_MAINNET = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
 export const V3_FACTORY_MAINNET = '0x1F98431c8aD98523631AE4a59f267346ea31F984'
-export const V3_INIT_CODE_HASH_MAINNET = '0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54'
+export const V3_INIT_CODE_HASH_MAINNET = '0x010013eddc3e59d6ce5c1429f6e115ca3d72a9b92bc824c814bb9f50a7fa4057'
 export const V2_INIT_CODE_HASH_MAINNET = '0x010005912ea0e4d14673314355e60e88442135b7cd9becdb11d53187c526492f'
 
 export const NFTX_COVEN_VAULT = '0xd89b16331f39ab3878daf395052851d3ac8cf3cd'
@@ -36,3 +37,17 @@ export const OPENSEA_CONDUIT_KEY = '0x0000007b02230091a7ed01230072f7006a004d60a8
 
 
 export const NFTX_ERC_1155_VAULT_ID = '61'
+
+export const MaxUint128 = BigNumber.from(2).pow(128).sub(1)
+
+export enum FeeAmount {
+  LOW = 500,
+  MEDIUM = 3000,
+  HIGH = 10000,
+}
+
+export const TICK_SPACINGS: { [amount in FeeAmount]: number } = {
+  [FeeAmount.LOW]: 10,
+  [FeeAmount.MEDIUM]: 60,
+  [FeeAmount.HIGH]: 200,
+}

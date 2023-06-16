@@ -32,10 +32,30 @@ const DEFAULT_COMPILER_SETTINGS = {
   },
 }
 
+let UNISWAPV3_COMPILER_SETTINGS = {
+  version: '0.7.6',
+  settings: {
+    viaIR: true,
+    evmVersion: 'istanbul',
+    optimizer: {
+      enabled: true,
+      runs: 1_000_000,
+    },
+    libraries: {
+      "lib/v3-periphery/contracts/libraries/NFTDescriptor.sol" : {
+        NFTDescriptor: "0x0000000000000000000000000000000000000000"
+      },
+    },
+    metadata: {
+      bytecodeHash: 'none',
+    },
+  },
+}
+
 export default {
   defaultNetwork: "zkSyncLocalhost",
   allowUnlimitedContractSize: true,
-  
+  UNISWAPV3_COMPILER_SETTINGS,
   paths: {
     sources: './contracts',
   },
@@ -95,7 +115,72 @@ export default {
     deployer: 0,
   },
   solidity: {
-    compilers: [DEFAULT_COMPILER_SETTINGS],
+    compilers: [
+      UNISWAPV3_COMPILER_SETTINGS,  // 0.7.6
+      DEFAULT_COMPILER_SETTINGS,    // 0.8.17
+    ],
+    overrides: {
+      "lib/v3-core/contracts/libraries/BitMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/FixedPoint96.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/FixedPoint128.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/FullMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/LiquidityMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/LowGasSafeMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/Oracle.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/Position.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/SafeCast.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/SqrtPriceMath.sol" : UNISWAPV3_COMPILER_SETTINGS,   
+      "lib/v3-core/contracts/libraries/SwapMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/Tick.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/TickBitmap.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/TickMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/TransferHelper.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-core/contracts/libraries/UnsafeMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+
+      "lib/v3-periphery/contracts/base/PeripheryPayments.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/base/PeripheryPaymentsWithFee.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/base/SelfPermit.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/lens/TickLens.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/BytesLib.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/ChainId.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/LiquidityAmounts.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/NFTDescriptor.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/NFTSVG.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/OracleLibrary.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/Path.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/PoolAddress.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/PoolTicksCounter.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/PositionKey.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "lib/v3-periphery/contracts/libraries/TransferHelper.sol" : UNISWAPV3_COMPILER_SETTINGS,
+
+      "@uniswap/v3-core/contracts/libraries/BitMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/FixedPoint128.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/FullMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/LiquidityMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/LowGasSafeMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/Oracle.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/Position.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/SafeCast.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/SqrtPriceMath.sol" : UNISWAPV3_COMPILER_SETTINGS,   
+      "@uniswap/v3-core/contracts/libraries/SwapMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/Tick.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/TickBitmap.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/TickMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/TransferHelper.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/v3-core/contracts/libraries/UnsafeMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+
+      "@uniswap/lib/contracts/libraries/AddressStringUtil.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/lib/contracts/libraries/Babylonian.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/lib/contracts/libraries/BitMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/lib/contracts/libraries/FixedPoint.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/lib/contracts/libraries/FullMath.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/lib/contracts/libraries/SafeERC20Namer.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      "@uniswap/lib/contracts/libraries/TransferHelper.sol" : UNISWAPV3_COMPILER_SETTINGS,
+      
+      "base64-sol/base64.sol" : UNISWAPV3_COMPILER_SETTINGS
+    
+    }
   },
   zksolc: {
     version: "1.3.10",
