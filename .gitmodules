@@ -7,3 +7,17 @@
 [submodule "lib/permit2"]
 	path = lib/permit2
 	url = git@github.com:Uniswap/permit2.git
+[submodule "lib/uniswapV2-zksync"]
+	path = lib/uniswapV2-zksync
+	url = git@github.com:vareger/uniswapV2-zksync.git
+[submodule "lib/uniswapV3-zksync"]
+	path = lib/uniswapV3-zksync
+	url = git@github.com:Pozzitron1337/uniswapV3-zksync.git
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = git@github.com:OpenZeppelin/openzeppelin-contracts.git
+	branch = release-v4.9
+[submodule "lib/openzeppelin-contracts-upgradeable"]
+	path = lib/openzeppelin-contracts-upgradeable
+	url = git@github.com:OpenZeppelin/openzeppelin-contracts-upgradeable.git
+	branch = release-v4.9
