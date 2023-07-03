@@ -162,6 +162,8 @@ INFURA_API_KEY='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 ```console
 yarn install
+git submodule init
+git submodule update
 yarn symlink
 yarn compile
 yarn test
