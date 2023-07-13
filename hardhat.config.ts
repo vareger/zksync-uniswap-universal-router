@@ -26,9 +26,6 @@ const DEFAULT_COMPILER_SETTINGS = {
       enabled: true,
       runs: 1_000_000,
     },
-    metadata: {
-      bytecodeHash: 'none',
-    },
   },
 }
 
@@ -65,11 +62,7 @@ export default {
   zksolc: {
     version: "1.3.13",
     compilerSource: "binary",
-    settings: {
-      metadata: {
-        bytecodeHash: 'none',
-      },
-    },
+    settings: {},
   },
   mocha: {
     timeout: 60000,
