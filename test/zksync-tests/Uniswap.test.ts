@@ -1,10 +1,6 @@
 import { 
   Permit2, 
-  UniswapV2Factory, 
-  UniswapV2Router02, 
   UniversalRouter,
-  UniswapV3Factory,
-  NonfungiblePositionManager
 } from '../../typechain';
 import {
     ALICE_PRIVATE_KEY,
@@ -40,6 +36,8 @@ import { encodePriceSqrt } from './shared/encodePriceSqrt';
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { encodePath } from './shared/swapRouter02Helpers';
+import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types';
+import WETH9Artifact from "./shared/abis/WETH9.json"
 
 
 /**
@@ -58,11 +56,11 @@ describe('Uniswap V2 and V3 Tests:', () => {
     let usdtContract: Contract;
     let planner: RoutePlanner;
 
-    let uniswapV2Factory: UniswapV2Factory;
-    let uniswapV2Router: UniswapV2Router02;
+    let uniswapV2Factory: Contract;
+    let uniswapV2Router: Contract;
 
-    let uniswapV3Factory: UniswapV3Factory;
-    let nonfungiblePositionManager: NonfungiblePositionManager;
+    let uniswapV3Factory: Contract;
+    let nonfungiblePositionManager: Contract;
 
     before(async () => {
         
@@ -72,14 +70,14 @@ describe('Uniswap V2 and V3 Tests:', () => {
         deployer = new Deployer(hre, alice);
 
         const MockERC20 = await deployer.loadArtifact("MockERC20");
-        const MockL2WETH = await deployer.loadArtifact("MockL2WETH");
-       
+        const WETH9 = WETH9Artifact as any as ZkSyncArtifact;
+
         let dai = await deployer.deploy(MockERC20, [6]);
         let usdc = await deployer.deploy(MockERC20, [6]);
         let usdt = await deployer.deploy(MockERC20, [6]);
-        let weth = await deployer.deploy(MockL2WETH, []);
+        let weth = await deployer.deploy(WETH9 as any as ZkSyncArtifact, []);
 
-        wethContract = new Contract(weth.address, MockL2WETH.abi, alice);
+        wethContract = new Contract(weth.address, WETH9.abi, alice);
         daiContract = new Contract(dai.address, MockERC20.abi, alice);
         usdcContract = new Contract(usdc.address, MockERC20.abi, alice);
         usdtContract = new Contract(usdt.address, MockERC20.abi, alice);
@@ -1310,7 +1308,9 @@ describe('Uniswap V2 and V3 Tests:', () => {
             const v2AmountIn: BigNumber = expandTo18DecimalsBN(2)
             const v3AmountIn: BigNumber = expandTo18DecimalsBN(3)
             const minAmountOut = expandTo18DecimalsBN(0.0005)
-  
+            
+            await new Promise(f => setTimeout(f, 3000));
+
             // V2 trades DAI for USDC, sending the tokens back to the router for v3 trade
             planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [router.address, v2AmountIn, 0, tokens, SOURCE_MSG_SENDER])
             // V3 trades USDC for WETH, trading the whole balance, with a recipient of Alice

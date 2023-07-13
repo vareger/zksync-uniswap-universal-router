@@ -11,7 +11,7 @@ contract MockAlphabetties is ERC721 {
         alice = receipent;
     }
 
-     function tokenURI(uint256 id) public view override returns (string memory){
+    function tokenURI(uint256 id) public view override returns (string memory){
         return '1';
     }
 

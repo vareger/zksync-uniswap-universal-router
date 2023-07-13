@@ -12,6 +12,7 @@ contract MockCryptoCovens is ERC721 {
     }
 
     function tokenURI(uint256 id) public view override returns (string memory){
+        alice; id;
         return '1';
     }
 

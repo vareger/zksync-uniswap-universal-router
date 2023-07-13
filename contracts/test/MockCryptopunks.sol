@@ -15,6 +15,7 @@ contract MockCryptopunks is ICryptoPunksMarket, ERC721 {
     }
 
     function tokenURI(uint256 id) public view override returns (string memory){
+        alice; id;
         return '1';
     }
 
@@ -23,10 +24,12 @@ contract MockCryptopunks is ICryptoPunksMarket, ERC721 {
     }
 
     function transferPunk(address to, uint256 punkIndex) override external {
+        to;
         _mint(alice, punkIndex);
     }
 
     function punkIndexToAddress(uint256 punkIndex) external view returns(string memory _alice) {
+        alice; punkIndex;
         return "0x36615Cf349d7F6344891B1e7CA7C72883F5dc049";
 
     }

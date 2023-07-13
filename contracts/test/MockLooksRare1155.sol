@@ -11,6 +11,7 @@ contract MockLooksRare1155 is ERC1155 {
         alice = _alice;
     }
     function uri(uint256 tokenId) public override view returns (string memory) {
+        alice; tokenId;
         return '1';
     }
 

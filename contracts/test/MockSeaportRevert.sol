@@ -98,8 +98,8 @@ contract MockSeaportRevert {
         CONSIDERATION
     }
 
-    address nftAddress;
-    address alice;
+    address public nftAddress;
+    address public alice;
 
 
     constructor(address _nftAddress, address _alice)  {
@@ -108,6 +108,7 @@ contract MockSeaportRevert {
     }
 
     function fulfillOrder(Order memory order, bytes32 fulfillerConduitKey) external payable returns (bool success, bytes memory output) {
+       order; fulfillerConduitKey;
        bytes memory _output = bytes('0x8baa579f');
        bool _success = false;
        
@@ -118,12 +119,16 @@ contract MockSeaportRevert {
     }
 
     function fulfillAdvancedOrder(AdvancedOrder memory advancedOrder, CriteriaResolver[] memory criteriaResolvers, bytes32 fulfillerConduitKey, address recipient) external payable returns (bool fulfilled){
+        advancedOrder; criteriaResolvers; fulfillerConduitKey; recipient;
+        fulfilled;
         MockERC721(nftAddress).transfer(alice, 8271);
         bool _success = false;
         require(_success, '0x8baa579f');
     }
 
     function fulfillAvailableAdvancedOrders(AdvancedOrder[] memory advancedOrders, CriteriaResolver[] memory criteriaResolvers, FulfillmentComponent[][] memory offerFulfillments, FulfillmentComponent[][] memory considerationFulfillments, bytes32 fulfillerConduitKey, address recipient, uint256 maximumFulfilled) external payable returns (bool[] memory availableOrders, Execution[] memory executions){
+        advancedOrders; criteriaResolvers; offerFulfillments; considerationFulfillments; fulfillerConduitKey; recipient; maximumFulfilled;
+        availableOrders; executions;
         MockERC721(nftAddress).transfer(alice, 8271);
         MockERC721(nftAddress).transfer(alice, 6366);
 

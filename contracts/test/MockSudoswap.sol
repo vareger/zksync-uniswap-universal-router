@@ -7,7 +7,7 @@ import {LSSVMPair} from './LSSVMPair.sol';
 contract MockSudoswap is ERC721 {
 
 
-    address alice;
+    address public alice;
     struct PairSwapSpecific {
         LSSVMPair pair;
         uint256[] nftIds;
@@ -20,7 +20,8 @@ contract MockSudoswap is ERC721 {
         alice = receipent;
     }
 
-     function tokenURI(uint256 id) public view override returns (string memory){
+    function tokenURI(uint256 id) public view override returns (string memory){
+        alice; id;
         return '1';
     }
 
@@ -29,6 +30,8 @@ contract MockSudoswap is ERC721 {
     }
 
     function robustSwapETHForSpecificNFTs(RobustPairSwapSpecific[] memory swapList, address payable ethRecipient, address nftRecipient, uint256 deadline) payable public returns (uint256 remainingValue) {
+        swapList; ethRecipient; nftRecipient; deadline;
+        remainingValue;
         _mint(alice, 80);
         _mint(alice, 35);
         _mint(alice, 93);

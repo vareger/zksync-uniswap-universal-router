@@ -1,6 +1,6 @@
 import { CommandType, RoutePlanner } from './shared/planner';
 import { expect } from './shared/expect';
-import { UniversalRouter, Permit2, ERC721, ERC1155, MockL2WETH } from '../../typechain';
+import { UniversalRouter, Permit2, ERC721, ERC1155 } from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
 import NFTX_ZAP_ABI from './shared/protocolHelpers/abis/NFTXZap.json';
 import {
@@ -17,13 +17,15 @@ import hre from 'hardhat';
 const { ethers } = hre;
 
 const nftxZapInterface = new ethers.utils.Interface(NFTX_ZAP_ABI);
+import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types';
+import WETH9Artifact from "./shared/abis/WETH9.json"
 
 describe('NFTX', () => {
   let provider: Provider;
   let alice: Wallet;
   let router: UniversalRouter;
   let permit2: Permit2;
-  let WETH: MockL2WETH;
+  let WETH: Contract;
   let cryptoCovens: ERC721;
   let twerkyContract: ERC1155;
   let nftx_coven_vault: Contract;
@@ -38,14 +40,14 @@ describe('NFTX', () => {
     let deployer = new Deployer(hre, alice);
 
     const MockCryptoCovens = await deployer.loadArtifact("MockCryptoCovens");
-    const MockL2WETH = await deployer.loadArtifact("MockL2WETH");
+    const WETH9 = WETH9Artifact as any as ZkSyncArtifact
     const MockERC1155 = await deployer.loadArtifact("MockERC1155");
     const MockNFTX_Coven_Vault = await deployer.loadArtifact("MockNFTX_Coven_Vault");
     const MockNFTX_ERC_1155_Vault = await deployer.loadArtifact("MockNFTX_ERC_1155_Vault");
     const MockNFTX_ZAP = await deployer.loadArtifact("MockNFTX_ZAP");
 
     cryptoCovens = await deployer.deploy(MockCryptoCovens, [alice.address]) as unknown as ERC721;
-    WETH = await deployer.deploy(MockL2WETH, []) as unknown as MockL2WETH;
+    WETH = await deployer.deploy(WETH9, []) as unknown as Contract;
     twerkyContract = await deployer.deploy(MockERC1155, [alice.address]) as unknown as ERC1155;
     nftx_coven_vault = await deployer.deploy(MockNFTX_Coven_Vault, [cryptoCovens.address]);
     nftx_erc1155_vault = await deployer.deploy(MockNFTX_ERC_1155_Vault, [twerkyContract.address]);

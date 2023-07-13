@@ -29,7 +29,8 @@ contract MockENS721 is ERC721 {
         alice = receipent;
     }
 
-     function tokenURI(uint256 id) public view override returns (string memory){
+    function tokenURI(uint256 id) public view override returns (string memory){
+        _status; id;
         return '1';
     }
 

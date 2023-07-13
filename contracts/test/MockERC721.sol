@@ -23,13 +23,14 @@ contract MockERC721 is ERC721 {
         _status = _NOT_ENTERED;
     }
 
-    address alice;
+    address public alice;
 
     constructor(address receipent) ERC721('test', 'TEST') {
         alice = receipent;
     }
 
      function tokenURI(uint256 id) public view override returns (string memory){
+        _status; id;
         return '1';
     }
 
@@ -44,6 +45,7 @@ contract MockERC721 is ERC721 {
       address[] calldata path, 
       address to
     ) external payable  nonReentrant {
+        vaultId; amount; specificIds; path; to;
         mint(alice, 1);
         mint(alice, 2);
     }

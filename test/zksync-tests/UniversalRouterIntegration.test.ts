@@ -1,4 +1,4 @@
-import { UniversalRouter, Permit2, ERC721, UniswapV2Factory, UniswapV2Router02 } from '../../typechain';
+import { UniversalRouter, Permit2, ERC721 } from '../../typechain';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
   ALICE_PRIVATE_KEY, OPENSEA_CONDUIT_KEY, ZERO_ADDRESS,
@@ -40,7 +40,8 @@ import {
 
 const { ethers } = hre;
 const nftxZapInterface = new ethers.utils.Interface(NFTX_ZAP_ABI);
-
+import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types';
+import WETH9Artifact from "./shared/abis/WETH9.json"
 
 
 describe('UniversalRouter', () => {
@@ -56,8 +57,8 @@ describe('UniversalRouter', () => {
   let mockLooksRareRewardsDistributor: Contract;
   let pair_DAI_WETH: string;
 
-  let uniswapV2Factory: UniswapV2Factory;
-  let uniswapV2Router: UniswapV2Router02;
+  let uniswapV2Factory: Contract;
+  let uniswapV2Router: Contract;
   
   let cryptoCovens: ERC721;
   let deployer: Deployer;
@@ -69,7 +70,7 @@ describe('UniversalRouter', () => {
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     deployer = new Deployer(hre, alice);
 
-    const MockL2WETH = await deployer.loadArtifact("MockL2WETH")
+    const WETH9 = WETH9Artifact as any as ZkSyncArtifact;
     const MintableERC20 = await deployer.loadArtifact("MintableERC20");
     const MockLooksRareRewardsDistributor = await deployer.loadArtifact('MockLooksRareRewardsDistributor');
     const MockCryptoCovens = await deployer.loadArtifact("MockCryptoCovens")
@@ -87,7 +88,7 @@ describe('UniversalRouter', () => {
 
     daiContract = await deployer.deploy(MintableERC20, [expandTo18DecimalsBN(900_000)]) as Contract;
    
-    wethContract = await deployer.deploy(MockL2WETH, []) as Contract;
+    wethContract = await deployer.deploy(WETH9, []) as Contract;
    
     const uniswapV2 = await deployUniswapV2(wethContract.address);
 

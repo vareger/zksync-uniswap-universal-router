@@ -100,8 +100,8 @@ contract MockSeaport3 {
         CONSIDERATION
     }
 
-    address nftAddress;
-    address alice;
+    address public nftAddress;
+    address public alice;
 
 
     constructor(address _nftAddress, address _alice)  {
@@ -110,6 +110,7 @@ contract MockSeaport3 {
     }
 
     function fulfillOrder(Order memory order, bytes32 fulfillerConduitKey) external payable returns (bool success, bytes memory output) {
+       order; fulfillerConduitKey;
        bytes memory _output = bytes('0x8baa579f');
        bool _success = false;
        
@@ -120,6 +121,7 @@ contract MockSeaport3 {
     }
 
     function fulfillAdvancedOrder(AdvancedOrder memory advancedOrder, CriteriaResolver[] memory criteriaResolvers, bytes32 fulfillerConduitKey, address recipient) external payable returns (bool fulfilled){
+        advancedOrder; criteriaResolvers; fulfillerConduitKey; recipient;
         MockERC721(nftAddress).mint(alice, 1);
         return true;
     }
