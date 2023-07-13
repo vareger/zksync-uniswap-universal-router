@@ -32,27 +32,6 @@ const DEFAULT_COMPILER_SETTINGS = {
   },
 }
 
-
-let UNISWAPV3_COMPILER_SETTINGS = {
-  version: '0.7.6',
-  settings: {
-    viaIR: false,
-    evmVersion: 'istanbul',
-    optimizer: {
-      enabled: true,
-      runs: 1_000_000,
-    },
-    libraries: {
-      "lib/uniswapV3-zksync/contracts/libraries/NFTDescriptor.sol" : {
-        NFTDescriptor: "0x0000000000000000000000000000000000000000"
-      },
-    },
-    metadata: {
-      bytecodeHash: 'none',
-    },
-  },
-}
-
 export default {
   paths: {
     sources: './contracts',
@@ -82,7 +61,6 @@ export default {
   },
   solidity: {
     compilers: [
-      UNISWAPV3_COMPILER_SETTINGS,  // 0.7.6
       DEFAULT_COMPILER_SETTINGS,    // 0.8.17
     ],
     overrides: {
