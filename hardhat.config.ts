@@ -60,11 +60,7 @@ export default {
     deployer: 0,
   },
   solidity: {
-    compilers: [
-      DEFAULT_COMPILER_SETTINGS,    // 0.8.17
-    ],
-    overrides: {
-    }
+    compilers: [DEFAULT_COMPILER_SETTINGS],
   },
   zksolc: {
     version: "1.3.13",
