@@ -6,7 +6,7 @@ const { ethers } = hre
 
 export const X2Y2_INTERFACE = new ethers.utils.Interface(X2Y2_ABI)
 export const x2y2Orders = JSON.parse(
-  fs.readFileSync('test/zksync-tests/shared/protocolHelpers/orders/X2Y2.json', { encoding: 'utf8' })
+  fs.readFileSync('test/integration-tests/shared/protocolHelpers/orders/X2Y2.json', { encoding: 'utf8' })
 )
 
 export type X2Y2Order = {
