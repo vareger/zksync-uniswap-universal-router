@@ -1,11 +1,12 @@
 import { BigNumber } from 'ethers'
 import hre from 'hardhat'
 const { ethers } = hre
-import LOOKS_RARE_ABI from './../../shared/abis/LooksRare.json'
+
+import LOOKS_RARE_ABI from './abis/LooksRare.json'
 import fs from 'fs'
 
 export const looksRareOrders = JSON.parse(
-  fs.readFileSync('test/integration-tests/shared/orders/LooksRare.json', { encoding: 'utf8' })
+  fs.readFileSync('test/zksync-tests/shared/protocolHelpers/orders/LooksRare.json', { encoding: 'utf8' })
 )
 export const looksRareInterface = new ethers.utils.Interface(LOOKS_RARE_ABI)
 

@@ -1,12 +1,22 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { BigNumber } from 'ethers'
-import hre from 'hardhat'
-import PERMIT2_COMPILE from '../../../../artifacts/permit2/src/Permit2.sol/Permit2.json'
+import { BigNumber, Signature } from 'ethers'
+
 import { Permit2 } from '../../../../typechain'
+import { Provider } from 'zksync-web3'
 
-const { ethers } = hre
+import {ethers} from 'ethers'
 
-const chainId: number = hre.network.config.chainId ? hre.network.config.chainId : 1
+
+
+const _PERMIT_DETAILS_TYPEHASH = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)"));
+
+const _PERMIT_SINGLE_TYPEHASH = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PermitSingle(PermitDetails details,address spender,uint256 sigDeadline)PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)"));
+
+const _HASHED_NAME = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Permit2"));
+
+const _TYPE_HASH = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("EIP712Domain(string name,uint256 chainId,address verifyingContract)"));
+
+const _PERMIT_BATCH_TYPEHASH = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PermitBatch(PermitDetails[] details,address spender,uint256 sigDeadline)PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)"));
+
 
 export type PermitDetails = {
   token: string
@@ -62,8 +72,6 @@ export const PERMIT2_PERMIT_BATCH_TYPE = {
   ],
 }
 
-export const PERMIT2_INTERFACE = new ethers.utils.Interface(PERMIT2_COMPILE.abi)
-
 export function getEip712Domain(chainId: number, verifyingContract: string) {
   return {
     name: 'Permit2',
@@ -72,48 +80,96 @@ export function getEip712Domain(chainId: number, verifyingContract: string) {
   }
 }
 
-export async function signPermit(
-  permit: PermitSingle,
-  signer: SignerWithAddress,
-  verifyingContract: string
-): Promise<string> {
-  const eip712Domain = getEip712Domain(chainId, verifyingContract)
-  const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_TYPE, permit)
-
-  return signature
-}
-
 export async function getPermitSignature(
-  permit: PermitSingle,
-  signer: SignerWithAddress,
+  permitSingle: PermitSingle,
+  signer: ethers.utils.SigningKey,
   permit2: Permit2
 ): Promise<string> {
   // look up the correct nonce for this permit
-  const nextNonce = (await permit2.allowance(signer.address, permit.details.token, permit.spender)).nonce
-  permit.details.nonce = nextNonce
-  return await signPermit(permit, signer, permit2.address)
+  const signerAddress = ethers.utils.computeAddress(signer.privateKey)
+  const nextNonce = (await permit2.allowance(signerAddress, permitSingle.details.token, permitSingle.spender)).nonce;
+  permitSingle.details.nonce = nextNonce;
+  const provider = Provider.getDefaultProvider();
+  const network = await provider.getNetwork();
+  const chainId = network.chainId;
+  const verifyingContract = permit2.address;
+  const DOMAIN_SEPARATOR = ethers.utils.keccak256(
+    ethers.utils.defaultAbiCoder.encode(
+      ['bytes32', 'bytes32', 'uint256', 'address'], 
+      [_TYPE_HASH, _HASHED_NAME, chainId, verifyingContract]
+    )
+  );
+  const permitDetailsHash = ethers.utils.keccak256(
+    ethers.utils.defaultAbiCoder.encode(
+      ['bytes32', 'address', 'uint160', 'uint48', 'uint48'], 
+      [_PERMIT_DETAILS_TYPEHASH, permitSingle.details.token, permitSingle.details.amount, permitSingle.details.expiration, permitSingle.details.nonce]
+    )
+  );
+  const permitSingleHash = ethers.utils.keccak256(
+    ethers.utils.defaultAbiCoder.encode(
+      ['bytes32', 'bytes32', 'address', 'uint256'], 
+      [_PERMIT_SINGLE_TYPEHASH, permitDetailsHash, permitSingle.spender, permitSingle.sigDeadline]
+    )
+  );
+  const hashTypedData = ethers.utils.keccak256(
+    ethers.utils.hexConcat([
+      ethers.utils.arrayify(ethers.utils.toUtf8Bytes('\x19\x01')), 
+      DOMAIN_SEPARATOR, 
+      permitSingleHash
+    ])
+  );
+  const signature: Signature = signer.signDigest(hashTypedData)
+  return signature.compact
 }
 
 export async function getPermitBatchSignature(
-  permit: PermitBatch,
-  signer: SignerWithAddress,
+  permitBatch: PermitBatch,
+  signer: ethers.utils.SigningKey,
   permit2: Permit2
 ): Promise<string> {
-  for (const i in permit.details) {
-    const nextNonce = (await permit2.allowance(signer.address, permit.details[i].token, permit.spender)).nonce
-    permit.details[i].nonce = nextNonce
+  for (const i in permitBatch.details) {
+    let signerAddress = ethers.utils.computeAddress(signer.privateKey)
+    const nextNonce = (await permit2.allowance(signerAddress, permitBatch.details[i].token, permitBatch.spender)).nonce
+    permitBatch.details[i].nonce = nextNonce
   }
+  const provider = Provider.getDefaultProvider();
+  const network = await provider.getNetwork();
+  const chainId = network.chainId;
+  const verifyingContract = permit2.address;
+  const DOMAIN_SEPARATOR = ethers.utils.keccak256(
+    ethers.utils.defaultAbiCoder.encode(
+      ['bytes32', 'bytes32', 'uint256', 'address'], 
+      [_TYPE_HASH, _HASHED_NAME, chainId, verifyingContract]
+    )
+  );
+  let permitDetailsHashes: any[] = []
+  for(const i in permitBatch.details) {
+    let detail = permitBatch.details[i]
+    permitDetailsHashes[i] = ethers.utils.keccak256(
+      ethers.utils.defaultAbiCoder.encode(
+        ['bytes32', 'address', 'uint160', 'uint48', 'uint48'], 
+        [_PERMIT_DETAILS_TYPEHASH, detail.token, detail.amount, detail.expiration, detail.nonce]
+      )
+    );
+  }
+  
+  const permitHashesHash = ethers.utils.keccak256(
+    ethers.utils.hexConcat(permitDetailsHashes)
+  );
+  const permitBatchHash = ethers.utils.keccak256(
+    ethers.utils.defaultAbiCoder.encode(
+      ['bytes32', 'bytes32', 'address', 'uint256'], 
+      [_PERMIT_BATCH_TYPEHASH, permitHashesHash, permitBatch.spender, permitBatch.sigDeadline]
+    )
+  );
+  const hashTypedData = ethers.utils.keccak256(
+    ethers.utils.hexConcat([
+      ethers.utils.arrayify(ethers.utils.toUtf8Bytes('\x19\x01')), 
+      DOMAIN_SEPARATOR, 
+      permitBatchHash
+    ])
+  );
+  const signature: Signature = signer.signDigest(hashTypedData)
+  return signature.compact
 
-  return await signPermitBatch(permit, signer, permit2.address)
-}
-
-export async function signPermitBatch(
-  permit: PermitBatch,
-  signer: SignerWithAddress,
-  verifyingContract: string
-): Promise<string> {
-  const eip712Domain = getEip712Domain(chainId, verifyingContract)
-  const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_BATCH_TYPE, permit)
-
-  return signature
 }

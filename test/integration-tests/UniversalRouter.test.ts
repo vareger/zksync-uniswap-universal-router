@@ -1,270 +1,173 @@
-import { UniversalRouter, Permit2, ERC20, MockLooksRareRewardsDistributor, ERC721 } from '../../typechain'
-import { BigNumber, BigNumberish } from 'ethers'
-import { Pair } from '@uniswap/v2-sdk'
-import { expect } from './shared/expect'
-import { abi as ROUTER_ABI } from '../../artifacts/contracts/UniversalRouter.sol/UniversalRouter.json'
-import { abi as TOKEN_ABI } from '../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
-import NFTX_ZAP_ABI from './shared/abis/NFTXZap.json'
-import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter'
+import { Permit2, UniversalRouter,  } from '../../typechain';
 import {
-  ADDRESS_THIS,
-  ALICE_ADDRESS,
-  DEADLINE,
-  OPENSEA_CONDUIT_KEY,
-  NFTX_COVEN_VAULT,
-  NFTX_COVEN_VAULT_ID,
-  ROUTER_REWARDS_DISTRIBUTOR,
-  SOURCE_MSG_SENDER,
-  MAX_UINT160,
-  MAX_UINT,
-  ETH_ADDRESS,
-} from './shared/constants'
-import {
-  seaportOrders,
-  seaportInterface,
-  getOrderParams,
-  getAdvancedOrderParams,
-  AdvancedOrder,
-  Order,
-} from './shared/protocolHelpers/seaport'
-import { resetFork, WETH, DAI, COVEN_721 } from './shared/mainnetForkHelpers'
-import { CommandType, RoutePlanner } from './shared/planner'
-import { makePair } from './shared/swapRouter02Helpers'
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { expandTo18DecimalsBN } from './shared/helpers'
-import hre from 'hardhat'
+    ALICE_PRIVATE_KEY
+} from './shared/constants';
+import hre, {  } from 'hardhat';
+import "@matterlabs/hardhat-zksync-chai-matchers";
+import { deployPermit2, deployRouter} from './shared/deployUniversalRouter';
+import { Wallet, Provider, Contract } from 'zksync-web3';
+import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
+import { expandTo18DecimalsBN } from './shared/helpers';
+import { RoutePlanner, CommandType} from './shared/planner';
+import { expect } from 'chai';
 
-const { ethers } = hre
-const nftxZapInterface = new ethers.utils.Interface(NFTX_ZAP_ABI)
-const routerInterface = new ethers.utils.Interface(ROUTER_ABI)
 
-describe('UniversalRouter', () => {
-  let alice: SignerWithAddress
-  let router: UniversalRouter
-  let permit2: Permit2
-  let daiContract: ERC20
-  let mockLooksRareToken: ERC20
-  let mockLooksRareRewardsDistributor: MockLooksRareRewardsDistributor
-  let pair_DAI_WETH: Pair
-  let cryptoCovens: ERC721
 
-  beforeEach(async () => {
-    await resetFork()
-    alice = await ethers.getSigner(ALICE_ADDRESS)
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [ALICE_ADDRESS],
-    })
-
-    // mock rewards contracts
-    const tokenFactory = await ethers.getContractFactory('MintableERC20')
-    const mockDistributorFactory = await ethers.getContractFactory('MockLooksRareRewardsDistributor')
-    mockLooksRareToken = (await tokenFactory.connect(alice).deploy(expandTo18DecimalsBN(5))) as ERC20
-    mockLooksRareRewardsDistributor = (await mockDistributorFactory.deploy(
-      ROUTER_REWARDS_DISTRIBUTOR,
-      mockLooksRareToken.address
-    )) as MockLooksRareRewardsDistributor
-    daiContract = new ethers.Contract(DAI.address, TOKEN_ABI, alice) as ERC20
-    pair_DAI_WETH = await makePair(alice, DAI, WETH)
-    permit2 = (await deployPermit2()).connect(alice) as Permit2
-    router = (
-      await deployUniversalRouter(permit2, mockLooksRareRewardsDistributor.address, mockLooksRareToken.address)
-    ).connect(alice) as UniversalRouter
-    cryptoCovens = COVEN_721.connect(alice) as ERC721
-  })
-
-  describe('#execute', () => {
-    let planner: RoutePlanner
+/**
+ * $ yarn hardhat test test/integration-tests/UniversalRouter.test.ts --network zkSyncLocalhost
+ */
+describe('UniversalRouter Test:', () => {
+    let provider: Provider;
+    let alice: Wallet;
+    let permit2: Permit2;
+    let router: Contract;
+    let erc20: Contract;
+    let erc1155: Contract;
+    let callback: Contract;
+    let interfaceIDs: Contract;
+    let planner: RoutePlanner;
+    let deployer: Deployer;
 
     beforeEach(async () => {
-      planner = new RoutePlanner()
-      await daiContract.approve(permit2.address, MAX_UINT)
-      await permit2.approve(DAI.address, router.address, MAX_UINT160, DEADLINE)
+        
+        provider = Provider.getDefaultProvider();
+        alice = new Wallet(ALICE_PRIVATE_KEY, provider);
+        deployer = new Deployer(hre, alice);
+
+        const MockERC20 = await deployer.loadArtifact("MockERC20");
+        const MockERC1155 = await deployer.loadArtifact("MockERC1155");
+        const Callback = await deployer.loadArtifact("Callbacks");
+        const InterfaceIDs = await deployer.loadArtifact("InterfaceIDs");
+    
+        erc20 = await deployer.deploy(MockERC20, [18]);
+        erc20 = new Contract(erc20.address, MockERC20.abi, alice);
+        
+        erc1155 = await deployer.deploy(MockERC1155, [alice.address]);
+        erc1155 = new Contract(erc1155.address, MockERC1155.abi, alice);
+
+        callback = await deployer.deploy(Callback, []);
+        callback = new Contract(callback.address, Callback.abi, alice);
+
+        interfaceIDs = await deployer.deploy(InterfaceIDs, []);
+        interfaceIDs = new Contract(interfaceIDs.address, InterfaceIDs.abi, alice);
+
+        permit2 = (await deployPermit2()).connect(alice) as Permit2;
+        router = (await deployRouter(permit2)).connect(alice) as UniversalRouter;
+        
+        await (await erc20.connect(alice).mint(alice.address, expandTo18DecimalsBN(1))).wait();
+        
+        
+        planner = new RoutePlanner();
     })
 
-    it('reverts if block.timestamp exceeds the deadline', async () => {
-      planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
-        alice.address,
-        1,
-        1,
-        [DAI.address, WETH.address],
-        SOURCE_MSG_SENDER,
-      ])
-      const invalidDeadline = 10
+    
+    it('testSweepToken', async () => {
+        await (await erc20.connect(alice).mint(router.address, expandTo18DecimalsBN(1))).wait();
 
-      const { commands, inputs } = planner
+        expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('1000000000000000000');
+        
+        planner.addCommand(CommandType.SWEEP, [erc20.address, alice.address, expandTo18DecimalsBN(1)]);
+        const { commands, inputs } = planner;
+        await(await router['execute(bytes,bytes[])'](commands, inputs)).wait();
 
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, invalidDeadline)).to.be.revertedWith(
-        'TransactionDeadlinePassed()'
-      )
-    })
+        expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('0');
+        expect((await erc20.balanceOf(alice.address)).toString()).to.be.equal('2000000000000000000');
+        
+        
+    })   
 
-    it('reverts for an invalid command at index 0', async () => {
-      const commands = '0xff'
-      const inputs: string[] = ['0x12341234']
+    it('testSweepTokenInsufficientOutput', async () => {
+        await(await erc20.connect(alice).mint(router.address, expandTo18DecimalsBN(1))).wait();
+        
+        expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('1000000000000000000');
+        
+      
+        planner.addCommand(CommandType.SWEEP, [erc20.address, alice.address, expandTo18DecimalsBN(2)]);
+        const { commands, inputs } = planner;
+        await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(router, 'InsufficientToken');
+    
+        
+        
+    })   
 
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.revertedWith(
-        'InvalidCommandType(31)'
-      )
-    })
+    
+    it('testSweepETH', async () => {
+        await expect(() =>
+            alice.transfer({
+                to: router.address,
+                amount: expandTo18DecimalsBN(1000000000),
+            })
+        ).to.changeEtherBalance(alice.address, expandTo18DecimalsBN(-1000000000));
 
-    it('reverts for an invalid command at index 1', async () => {
-      const invalidCommand = 'ff'
-      planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
-        DAI.address,
-        pair_DAI_WETH.liquidityToken.address,
-        expandTo18DecimalsBN(1),
-      ])
-      let commands = planner.commands
-      let inputs = planner.inputs
+        
+        planner.addCommand(CommandType.SWEEP, ['0x0000000000000000000000000000000000000000', alice.address, expandTo18DecimalsBN(1000000000)]);
+        const { commands, inputs } = planner;
+        await expect(await router['execute(bytes,bytes[])'](commands, inputs)).to.changeEtherBalance(alice.address, expandTo18DecimalsBN(1000000000));
+        
+    })  
 
-      commands = commands.concat(invalidCommand)
-      inputs.push('0x21341234')
+    it('testSweepETHInsufficientOutput', async () => {
+        
+        planner.addCommand(CommandType.SWEEP, ['0x0000000000000000000000000000000000000000', alice.address, expandTo18DecimalsBN(1000000001)]);
+        const { commands, inputs } = planner;
+        const value = expandTo18DecimalsBN(1000000000);
+        await expect(router['execute(bytes,bytes[])'](commands, inputs, {value})).to.be.revertedWithCustomError(router, 'InsufficientETH');
+        
+    })  
 
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.revertedWith(
-        'InvalidCommandType(31)'
-      )
-    })
+    it('testSweepERC1155NotFullAmount', async () => {
+        await ( await erc1155.connect(alice).mint(router.address, 1, expandTo18DecimalsBN(1))).wait();
+        
+        expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('1000000000000000000');
+        
+        planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, alice.address, 1, expandTo18DecimalsBN(0.5)]);
+        const { commands, inputs } = planner;
+        await( await router['execute(bytes,bytes[])'](commands, inputs)).wait();
 
-    it('reverts if paying a portion over 100% of contract balance', async () => {
-      await daiContract.transfer(router.address, expandTo18DecimalsBN(1))
-      planner.addCommand(CommandType.PAY_PORTION, [WETH.address, alice.address, 11_000])
-      planner.addCommand(CommandType.SWEEP, [WETH.address, alice.address, 1])
-      const { commands, inputs } = planner
-      await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWith('InvalidBips()')
-    })
+        expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('0');
+        expect((await erc1155.balanceOf(alice.address, 1)).toString()).to.be.equal('1000000000000000000');
+        
+        
+    })   
 
-    it('reverts if a malicious contract tries to reenter', async () => {
-      const reentrantProtocol = await (await ethers.getContractFactory('ReenteringProtocol')).deploy()
+    it('testSweepERC1155', async () => {
+        await(await erc1155.connect(alice).mint(router.address, 1, expandTo18DecimalsBN(1))).wait();
+        
+        expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('1000000000000000000');
+        
+        planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, alice.address, 1, expandTo18DecimalsBN(1)]);
+        const { commands, inputs } = planner;
+        await(await router['execute(bytes,bytes[])'](commands, inputs)).wait();
 
-      router = (
-        await deployUniversalRouter(
-          permit2,
-          mockLooksRareRewardsDistributor.address,
-          mockLooksRareToken.address,
-          reentrantProtocol.address
-        )
-      ).connect(alice) as UniversalRouter
+        expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('0');
+        expect((await erc1155.balanceOf(alice.address, 1)).toString()).to.be.equal('1000000000000000000');
+        
+        
+    })   
 
-      planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, alice.address, 0])
-      let { commands, inputs } = planner
+    it('testSweepERC1155', async () => {
+        await(await erc1155.connect(alice).mint(router.address, 1, expandTo18DecimalsBN(1))).wait();
+        
+        expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('1000000000000000000');
+        
+        planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, alice.address, 1, expandTo18DecimalsBN(2)]);
+        const { commands, inputs } = planner;
+        await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(router, 'InsufficientToken');
+        
+        
+    })   
 
-      const sweepCalldata = routerInterface.encodeFunctionData('execute(bytes,bytes[])', [commands, inputs])
-      const reentrantCalldata = reentrantProtocol.interface.encodeFunctionData('callAndReenter', [
-        router.address,
-        sweepCalldata,
-      ])
-
-      planner = new RoutePlanner()
-      planner.addCommand(CommandType.NFTX, [0, reentrantCalldata])
-      ;({ commands, inputs } = planner)
-
-      const notAllowedReenterSelector = '0xb418cb98'
-      await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWith(
-        `ExecutionFailed(0, "` + notAllowedReenterSelector + `")`
-      )
-    })
-
-    describe('partial fills', async () => {
-      let nftxValue: BigNumber
-      let numCovens: number
-      let value: BigNumber
-      let invalidSeaportCalldata: string
-      let seaportValue: BigNumber
-
-      beforeEach(async () => {
-        // add valid nftx order to planner
-        nftxValue = expandTo18DecimalsBN(4)
-        numCovens = 2
-        const calldata = nftxZapInterface.encodeFunctionData('buyAndRedeem', [
-          NFTX_COVEN_VAULT_ID,
-          numCovens,
-          [],
-          [WETH.address, NFTX_COVEN_VAULT],
-          alice.address,
-        ])
-        planner.addCommand(CommandType.NFTX, [nftxValue, calldata])
-
-        let invalidSeaportOrder = JSON.parse(JSON.stringify(seaportOrders[0]))
-        invalidSeaportOrder.protocol_data.signature = '0xdeadbeef'
-        let seaportOrder: Order
-        ;({ order: seaportOrder, value: seaportValue } = getOrderParams(invalidSeaportOrder))
-        invalidSeaportCalldata = seaportInterface.encodeFunctionData('fulfillOrder', [
-          seaportOrder,
-          OPENSEA_CONDUIT_KEY,
-        ])
-
-        value = seaportValue.add(nftxValue)
-      })
-
-      it('reverts if no commands are allowed to revert', async () => {
-        planner.addCommand(CommandType.SEAPORT, [seaportValue, invalidSeaportCalldata])
-
-        const { commands, inputs } = planner
-
-        await expect(
-          router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })
-        ).to.be.revertedWith('ExecutionFailed(1, "0x8baa579f")')
-      })
-
-      it('does not revert if invalid seaport transaction allowed to fail', async () => {
-        planner.addCommand(CommandType.SEAPORT, [seaportValue, invalidSeaportCalldata], true)
-        const { commands, inputs } = planner
-
-        const covenBalanceBefore = await cryptoCovens.balanceOf(alice.address)
-        await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })
-        const covenBalanceAfter = await cryptoCovens.balanceOf(alice.address)
-        expect(covenBalanceAfter.sub(covenBalanceBefore)).to.eq(numCovens)
-      })
-    })
-
-    describe('ERC20 --> NFT', () => {
-      let advancedOrder: AdvancedOrder
-      let value: BigNumber
-
-      beforeEach(async () => {
-        ;({ advancedOrder, value } = getAdvancedOrderParams(seaportOrders[0]))
-      })
-
-      it('completes a trade for ERC20 --> ETH --> Seaport NFT', async () => {
-        const maxAmountIn = expandTo18DecimalsBN(100_000)
-        const calldata = seaportInterface.encodeFunctionData('fulfillAdvancedOrder', [
-          advancedOrder,
-          [],
-          OPENSEA_CONDUIT_KEY,
-          alice.address,
-        ])
-
-        planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
-          ADDRESS_THIS,
-          value,
-          maxAmountIn,
-          [DAI.address, WETH.address],
-          SOURCE_MSG_SENDER,
-        ])
-        planner.addCommand(CommandType.UNWRAP_WETH, [ADDRESS_THIS, value])
-        planner.addCommand(CommandType.SEAPORT, [value.toString(), calldata])
-        const { commands, inputs } = planner
-        const covenBalanceBefore = await cryptoCovens.balanceOf(alice.address)
-        await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)
-        const covenBalanceAfter = await cryptoCovens.balanceOf(alice.address)
-        expect(covenBalanceAfter.sub(covenBalanceBefore)).to.eq(1)
-      })
-    })
-  })
-
-  describe('#collectRewards', () => {
-    let amountRewards: BigNumberish
-    beforeEach(async () => {
-      amountRewards = expandTo18DecimalsBN(0.5)
-      mockLooksRareToken.connect(alice).transfer(mockLooksRareRewardsDistributor.address, amountRewards)
-    })
-
-    it('transfers owed rewards into the distributor contract', async () => {
-      const balanceBefore = await mockLooksRareToken.balanceOf(ROUTER_REWARDS_DISTRIBUTOR)
-      await router.collectRewards('0x00')
-      const balanceAfter = await mockLooksRareToken.balanceOf(ROUTER_REWARDS_DISTRIBUTOR)
-      expect(balanceAfter.sub(balanceBefore)).to.eq(amountRewards)
-    })
-  })
+    it('testSupportsInterface', async () => {
+        let IERC1155ID =await interfaceIDs.getIERC1155InterfaceId();
+        expect((await callback.supportsInterface(IERC1155ID)).toString()).to.be.equal('true');
+        
+        
+        let IERC721ID =await interfaceIDs.getIERC721InterfaceId();
+        expect((await callback.supportsInterface(IERC721ID)).toString()).to.be.equal('true');
+        
+        let IERC165ID =await interfaceIDs.getIERC165InterfaceId();
+        expect((await callback.supportsInterface(IERC165ID)).toString()).to.be.equal('true');
+        
+    })  
+  
 })
