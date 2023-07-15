@@ -3,11 +3,10 @@ pragma solidity ^0.8.15;
 
 // https://etherscan.io/address/0x6d7812d41a08bc2a910b562d8b56411964a4ed88#code
 contract MockX2Y2 {
-
-   struct OrderItem {
+    struct OrderItem {
         uint256 price;
         bytes data;
-   }
+    }
 
     struct Order {
         uint256 salt;
@@ -98,7 +97,5 @@ contract MockX2Y2 {
         ERC1155
     }
 
-   function run(RunInput memory input) public payable {
-        
-   }
+    function run(RunInput memory input) public payable {}
 }

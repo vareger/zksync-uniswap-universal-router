@@ -5,8 +5,6 @@ import {ERC721} from 'solmate/src/tokens/ERC721.sol';
 import {LSSVMPair} from './LSSVMPair.sol';
 
 contract MockSudoswap is ERC721 {
-
-
     address public alice;
     struct PairSwapSpecific {
         LSSVMPair pair;
@@ -16,12 +14,14 @@ contract MockSudoswap is ERC721 {
         PairSwapSpecific swapInfo;
         uint256 maxCost;
     }
+
     constructor(address receipent) ERC721('test', 'TEST') {
         alice = receipent;
     }
 
-    function tokenURI(uint256 id) public view override returns (string memory){
-        alice; id;
+    function tokenURI(uint256 id) public view override returns (string memory) {
+        alice;
+        id;
         return '1';
     }
 
@@ -29,13 +29,19 @@ contract MockSudoswap is ERC721 {
         _mint(to, id);
     }
 
-    function robustSwapETHForSpecificNFTs(RobustPairSwapSpecific[] memory swapList, address payable ethRecipient, address nftRecipient, uint256 deadline) payable public returns (uint256 remainingValue) {
-        swapList; ethRecipient; nftRecipient; deadline;
+    function robustSwapETHForSpecificNFTs(
+        RobustPairSwapSpecific[] memory swapList,
+        address payable ethRecipient,
+        address nftRecipient,
+        uint256 deadline
+    ) public payable returns (uint256 remainingValue) {
+        swapList;
+        ethRecipient;
+        nftRecipient;
+        deadline;
         remainingValue;
         _mint(alice, 80);
         _mint(alice, 35);
         _mint(alice, 93);
     }
-
-   
 }

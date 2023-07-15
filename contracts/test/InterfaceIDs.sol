@@ -45,7 +45,6 @@ interface IERC721Receiver {
     ) external returns (bytes4);
 }
 
-
 /**
  * @dev _Available since v3.1._
  */
@@ -98,24 +97,19 @@ interface IERC1155Receiver is IERC165 {
     ) external returns (bytes4);
 }
 
-
-
-
 /// @title ERC Callback Support
 /// @notice Implements various functions introduced by a variety of ERCs for security reasons.
 /// All are called by external contracts to ensure that this contract safely supports the ERC in question.
-contract InterfaceIDs{
-    
-
-    function getIERC165InterfaceId() external pure returns (bytes4){
+contract InterfaceIDs {
+    function getIERC165InterfaceId() external pure returns (bytes4) {
         return type(IERC165).interfaceId;
     }
 
-    function getIERC1155InterfaceId() external pure returns (bytes4){
+    function getIERC1155InterfaceId() external pure returns (bytes4) {
         return type(IERC1155Receiver).interfaceId;
     }
 
-    function getIERC721InterfaceId() external pure returns (bytes4){
+    function getIERC721InterfaceId() external pure returns (bytes4) {
         return type(IERC721Receiver).interfaceId;
     }
 }

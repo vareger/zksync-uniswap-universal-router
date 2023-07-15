@@ -4,14 +4,13 @@ pragma solidity ^0.8.15;
 import {ERC721} from 'solmate/src/tokens/ERC721.sol';
 
 contract MockERC721 is ERC721 {
-
     uint256 private _status;
     uint256 private constant _ENTERED = 2;
     uint256 private constant _NOT_ENTERED = 1;
 
     modifier nonReentrant() {
         // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+        require(_status != _ENTERED, 'ReentrancyGuard: reentrant call');
 
         // Any calls to nonReentrant after this point will fail
         _status = _ENTERED;
@@ -29,8 +28,9 @@ contract MockERC721 is ERC721 {
         alice = receipent;
     }
 
-     function tokenURI(uint256 id) public view override returns (string memory){
-        _status; id;
+    function tokenURI(uint256 id) public view override returns (string memory) {
+        _status;
+        id;
         return '1';
     }
 
@@ -39,13 +39,17 @@ contract MockERC721 is ERC721 {
     }
 
     function buyAndRedeem(
-      uint256 vaultId, 
-      uint256 amount,
-      uint256[] calldata specificIds, 
-      address[] calldata path, 
-      address to
-    ) external payable  nonReentrant {
-        vaultId; amount; specificIds; path; to;
+        uint256 vaultId,
+        uint256 amount,
+        uint256[] calldata specificIds,
+        address[] calldata path,
+        address to
+    ) external payable nonReentrant {
+        vaultId;
+        amount;
+        specificIds;
+        path;
+        to;
         mint(alice, 1);
         mint(alice, 2);
     }

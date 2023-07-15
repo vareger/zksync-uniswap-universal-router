@@ -2,11 +2,9 @@
 pragma solidity ^0.8.15;
 
 contract MockNFTX_Coven_Vault {
-
     address public coven;
 
     constructor(address _coven) {
         coven = _coven;
     }
-
 }

@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.15;
 
-import "./MockNFTX_Coven_Vault.sol";
-import "./MockNFTX_ERC_1155_Vault.sol";
-import "../MockERC721.sol";
-import "../MockERC1155.sol";
+import './MockNFTX_Coven_Vault.sol';
+import './MockNFTX_ERC_1155_Vault.sol';
+import '../MockERC721.sol';
+import '../MockERC1155.sol';
 
 contract MockNFTX_ZAP {
-
     MockNFTX_Coven_Vault public covenVault;
     MockNFTX_ERC_1155_Vault public erc1155Vault;
 
@@ -20,46 +19,44 @@ contract MockNFTX_ZAP {
     }
 
     function buyAndRedeem(
-        uint256 vaultId, 
+        uint256 vaultId,
         uint256 amount,
-        uint256[] calldata specificIds, 
-        address[] calldata path, 
+        uint256[] calldata specificIds,
+        address[] calldata path,
         address to
     ) external payable {
         if (vaultId == 333) {
             if (specificIds.length > 0) {
-                if( MockERC721(covenVault.coven()).ownerOf(specificIds[0])== to) {
+                if (MockERC721(covenVault.coven()).ownerOf(specificIds[0]) == to) {
                     return;
                 }
-                for(uint256 i = 0; i < specificIds.length; i++) {
+                for (uint256 i = 0; i < specificIds.length; i++) {
                     MockERC721(covenVault.coven()).mint(to, specificIds[i]);
                 }
                 return;
             }
             if (amount > 0) {
-                for(uint256 i = 0; i < amount; i++) {
+                for (uint256 i = 0; i < amount; i++) {
                     MockERC721(covenVault.coven()).mint(to, totalSupplyNFT);
                     totalSupplyNFT++;
                 }
                 return;
-            } 
+            }
         }
         if (vaultId == 61) {
             if (specificIds.length > 0) {
-                for(uint256 i = 0; i < specificIds.length; i++) {
+                for (uint256 i = 0; i < specificIds.length; i++) {
                     MockERC1155(erc1155Vault.erc1155()).mint(to, specificIds[i], amount);
                 }
                 return;
             }
             if (amount > 0) {
-                for(uint256 i = 0; i < amount; i++) {
+                for (uint256 i = 0; i < amount; i++) {
                     MockERC1155(erc1155Vault.erc1155()).mint(to, totalSupplyERC1155, 1);
                     totalSupplyERC1155++;
                 }
                 return;
             }
-            
         }
     }
-
 }

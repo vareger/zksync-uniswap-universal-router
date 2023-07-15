@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ERC20} from "../../../lib/solmate/src/tokens/ERC20.sol";
-import {SafeTransferLib} from "../../../lib/solmate/src/utils/SafeTransferLib.sol";
-import {PermitHash} from "../../../lib/permit2/src/libraries/PermitHash.sol";
-import {SignatureVerification} from "../../../lib/permit2/src/libraries/SignatureVerification.sol";
-import {EIP712} from "../../../lib/permit2/src/EIP712.sol";
-import {IAllowanceTransfer} from "../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol";
-import {SignatureExpired, InvalidNonce} from "../../../lib/permit2/src/PermitErrors.sol";
-import {Allowance} from "../../../lib/permit2/src/libraries/Allowance.sol";
+import {ERC20} from '../../../lib/solmate/src/tokens/ERC20.sol';
+import {SafeTransferLib} from '../../../lib/solmate/src/utils/SafeTransferLib.sol';
+import {PermitHash} from '../../../lib/permit2/src/libraries/PermitHash.sol';
+import {SignatureVerification} from '../../../lib/permit2/src/libraries/SignatureVerification.sol';
+import {EIP712} from '../../../lib/permit2/src/EIP712.sol';
+import {IAllowanceTransfer} from '../../../lib/permit2/src/interfaces/IAllowanceTransfer.sol';
+import {SignatureExpired, InvalidNonce} from '../../../lib/permit2/src/PermitErrors.sol';
+import {Allowance} from '../../../lib/permit2/src/libraries/Allowance.sol';
 
 contract MockAllowanceTransfer is IAllowanceTransfer, EIP712 {
     using SignatureVerification for bytes;

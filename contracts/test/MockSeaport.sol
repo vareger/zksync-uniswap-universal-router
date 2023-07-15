@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.15;
 
-import "./MockERC721.sol";
-
+import './MockERC721.sol';
 
 contract MockSeaport {
-
-
-
     struct OfferItem {
         ItemType itemType;
         address token;
@@ -16,12 +12,10 @@ contract MockSeaport {
         uint256 endAmount;
     }
 
-
     struct FulfillmentComponent {
         uint256 orderIndex;
         uint256 itemIndex;
     }
-
 
     struct ConsiderationItem {
         ItemType itemType;
@@ -35,7 +29,6 @@ contract MockSeaport {
     struct Order {
         OrderParameters parameters;
         bytes signature;
-    
     }
 
     struct OrderParameters {
@@ -81,8 +74,8 @@ contract MockSeaport {
         uint256 amount;
         address recipient;
     }
-    
-    enum ItemType{
+
+    enum ItemType {
         NATIVE,
         ERC20,
         ERC721,
@@ -90,7 +83,7 @@ contract MockSeaport {
         ERC721_WITH_CRITERIA,
         ERC1155_WITH_CRITERIA
     }
-    enum OrderType{
+    enum OrderType {
         FULL_OPEN,
         PARTIAL_OPEN,
         FULL_RESTRICTED,
@@ -105,52 +98,47 @@ contract MockSeaport {
     address public nftAddress;
     address public alice;
 
-
-    constructor(address _nftAddress, address _alice)  {
+    constructor(address _nftAddress, address _alice) {
         nftAddress = _nftAddress;
         alice = _alice;
     }
 
-    function fulfillOrder(Order memory order, bytes32 fulfillerConduitKey) external payable returns (bool success, bytes memory output) {
-       bytes memory _output = bytes('0x8baa579f');
-       bool _success = false;
-       
-       MockERC721(nftAddress).mint(alice, 1);
-       MockERC721(nftAddress).mint(alice, 2);
-       require(_success, '0x8baa579f');
-       return (false, _output);
+    function fulfillOrder(
+        Order memory order,
+        bytes32 fulfillerConduitKey
+    ) external payable returns (bool success, bytes memory output) {
+        bytes memory _output = bytes('0x8baa579f');
+        bool _success = false;
+
+        MockERC721(nftAddress).mint(alice, 1);
+        MockERC721(nftAddress).mint(alice, 2);
+        require(_success, '0x8baa579f');
+        return (false, _output);
     }
 
-    function fulfillAdvancedOrder(AdvancedOrder memory advancedOrder, CriteriaResolver[] memory criteriaResolvers, bytes32 fulfillerConduitKey, address recipient) external payable returns (bool fulfilled){
+    function fulfillAdvancedOrder(
+        AdvancedOrder memory advancedOrder,
+        CriteriaResolver[] memory criteriaResolvers,
+        bytes32 fulfillerConduitKey,
+        address recipient
+    ) external payable returns (bool fulfilled) {
         MockERC721(nftAddress).transfer(alice, 8271);
         return true;
     }
 
     function fulfillAvailableAdvancedOrders(
-        AdvancedOrder[] memory advancedOrders, 
-        CriteriaResolver[] memory criteriaResolvers, 
-        FulfillmentComponent[][] memory offerFulfillments, 
-        FulfillmentComponent[][] memory considerationFulfillments, 
-        bytes32 fulfillerConduitKey, 
-        address recipient, 
+        AdvancedOrder[] memory advancedOrders,
+        CriteriaResolver[] memory criteriaResolvers,
+        FulfillmentComponent[][] memory offerFulfillments,
+        FulfillmentComponent[][] memory considerationFulfillments,
+        bytes32 fulfillerConduitKey,
+        address recipient,
         uint256 maximumFulfilled
-    ) external payable returns (bool[] memory availableOrders, Execution[] memory executions){
-        try MockERC721(nftAddress).transfer(alice, 8271) {
-        
-        } catch {
-        
-        }
-        
-        try MockERC721(nftAddress).transfer(alice, 6366) {
-        
-        } catch {
-        
-        }
+    ) external payable returns (bool[] memory availableOrders, Execution[] memory executions) {
+        try MockERC721(nftAddress).transfer(alice, 8271) {} catch {}
 
+        try MockERC721(nftAddress).transfer(alice, 6366) {} catch {}
     }
 
-    receive() external payable {
-
-    }
+    receive() external payable {}
 }
-
