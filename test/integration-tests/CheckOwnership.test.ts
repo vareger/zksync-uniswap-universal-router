@@ -73,7 +73,7 @@ describe('Check Ownership', () => {
       const { advancedOrder } = getAdvancedOrderParams(seaportOrders[0]);
       const params = advancedOrder.parameters;
 
-      
+
       planner.addCommand(CommandType.OWNER_CHECK_721, [
         ZERO_ADDRESS,
         cryptoCovens.address,
@@ -85,7 +85,7 @@ describe('Check Ownership', () => {
     })
 
     it('reverts for invalid ownership', async () => {
-     
+
       const { advancedOrder } = getAdvancedOrderParams(seaportOrders[0]);
       const params = advancedOrder.parameters;
       planner.addCommand(CommandType.OWNER_CHECK_721, [
@@ -152,7 +152,7 @@ describe('Check Ownership', () => {
 
       const owner0After = await cryptoCovens.ownerOf(params0.offer[0].identifierOrCriteria);
       const owner1After = await cryptoCovens.ownerOf(params1.offer[0].identifierOrCriteria);
-    
+
       expect(owner0After).to.eq(alice.address);
       expect(owner1After).to.eq(alice.address);
     })
@@ -184,9 +184,9 @@ describe('Check Ownership', () => {
       const { makerOrder } = createLooksRareOrders(looksRareOrders[LOOKS_RARE_1155_ORDER], router.address);
 
       planner.addCommand(CommandType.OWNER_CHECK_1155, [
-        alice.address, 
-        makerOrder.collection, 
-        makerOrder.tokenId, 
+        alice.address,
+        makerOrder.collection,
+        makerOrder.tokenId,
         1
       ]);
 

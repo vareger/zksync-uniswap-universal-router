@@ -3,7 +3,7 @@ import SUDOSWAP_ABI from './shared/abis/Sudoswap.json';
 import { UniversalRouter, Permit2 } from '../../typechain';
 import { ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS } from './shared/constants';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY} from './shared/constants';
+import { ALICE_PRIVATE_KEY } from './shared/constants';
 import hre from 'hardhat';
 import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
@@ -28,15 +28,15 @@ describe('Sudoswap', () => {
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     deployer = new Deployer(hre, alice);
 
-    const MockSudoswap = await deployer.loadArtifact('MockSudoswap');    
+    const MockSudoswap = await deployer.loadArtifact('MockSudoswap');
 
     mockSudoswap = await deployer.deploy(MockSudoswap, [alice.address]);
     mockSudoswap = new Contract(mockSudoswap.address, MockSudoswap.abi, alice);
-   
-   
+
+
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
     router = (await deployUniversalRouter(
-      permit2, 
+      permit2,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
@@ -62,7 +62,6 @@ describe('Sudoswap', () => {
       planner.addCommand(CommandType.SUDOSWAP, [value, calldata]);
       const { commands, inputs } = planner;
 
-      //const aliceBalance = await ethers.provider.getBalance(alice.address)
       await (
         await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })
       ).wait();

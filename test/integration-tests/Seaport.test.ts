@@ -1,6 +1,6 @@
-import { UniversalRouter, Permit2} from '../../typechain';
+import { UniversalRouter, Permit2 } from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY, DEADLINE, OPENSEA_CONDUIT_KEY, ETH_ADDRESS, ZERO_ADDRESS} from './shared/constants';
+import { ALICE_PRIVATE_KEY, DEADLINE, OPENSEA_CONDUIT_KEY, ETH_ADDRESS, ZERO_ADDRESS } from './shared/constants';
 import hre from 'hardhat';
 import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
@@ -32,18 +32,18 @@ describe('Seaport', () => {
     deployer = new Deployer(hre, alice);
 
     const MockERC721 = await deployer.loadArtifact('MockERC721');
-    const MockSeaport = await deployer.loadArtifact('MockSeaport');    
+    const MockSeaport = await deployer.loadArtifact('MockSeaport');
 
     mockERC721 = await deployer.deploy(MockERC721, [alice.address]);
     mockERC721 = new Contract(mockERC721.address, MockERC721.abi, alice);
-    
+
     mockSeaport = await deployer.deploy(MockSeaport, [mockERC721.address, alice.address]);
     mockSeaport = new Contract(mockSeaport.address, MockSeaport.abi, alice);
-   
-   
+
+
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
     router = (await deployUniversalRouter(
-      permit2, 
+      permit2,
       ZERO_ADDRESS,
       mockSeaport.address
     )).connect(alice) as UniversalRouter;
@@ -62,24 +62,19 @@ describe('Seaport', () => {
 
     planner.addCommand(CommandType.SEAPORT, [value.toString(), calldata]);
     const { commands, inputs } = planner;
-    await(await mockERC721.connect(alice).mint("0x0f1fcc9da5db6753c90fbeb46024c056516fbc17", 8271)).wait();
+    await (await mockERC721.connect(alice).mint("0x0f1fcc9da5db6753c90fbeb46024c056516fbc17", 8271)).wait();
     const ownerBefore = await mockERC721.ownerOf(params.offer[0].identifierOrCriteria);
 
-    
-    //const ethBefore = await ethers.provider.getBalance(alice.address)
     await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait();
     const ownerAfter = await mockERC721.ownerOf(params.offer[0].identifierOrCriteria);
-    //const ethAfter = await ethers.provider.getBalance(alice.address)
-    //const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice)
-    //const ethDelta = ethBefore.sub(ethAfter)
-
+ 
     expect(ownerBefore.toLowerCase()).to.eq(params.offerer);
     expect(ownerAfter).to.eq(alice.address);
-    //expect(ethDelta.sub(gasSpent)).to.eq(value)
+
   })
 
   it('revertable fulfillAdvancedOrder reverts and sweeps ETH', async () => {
-    
+
     let { advancedOrder, value } = getAdvancedOrderParams(seaportOrders[0]);
     const params = advancedOrder.parameters;
     const calldata = seaportInterface.encodeFunctionData('fulfillAdvancedOrder', [
@@ -95,23 +90,18 @@ describe('Seaport', () => {
 
     const commands = planner.commands;
     const inputs = planner.inputs;
-    await(await mockERC721.connect(alice).mint("0x0f1fcc9da5db6753c90fbeb46024c056516fbc17", params.offer[0].identifierOrCriteria)).wait();
-    
+    await (await mockERC721.connect(alice).mint("0x0f1fcc9da5db6753c90fbeb46024c056516fbc17", params.offer[0].identifierOrCriteria)).wait();
+
     const ownerBefore = await mockERC721.ownerOf(params.offer[0].identifierOrCriteria);
-    //const ethBefore = await ethers.provider.getBalance(alice.address)
 
     // don't send enough ETH, so the seaport purchase reverts
     value = BigNumber.from(value).sub('1');
     await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait();
 
     const ownerAfter = await mockERC721.ownerOf(params.offer[0].identifierOrCriteria);
-    //const ethAfter = await ethers.provider.getBalance(alice.address)
-    //const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice)
-    //const ethDelta = ethBefore.sub(ethAfter)
 
     // The owner was unchanged, the user got the eth back
     expect(ownerBefore.toLowerCase()).to.eq(ownerAfter.toLowerCase());
-    //expect(ethDelta).to.eq(gasSpent)
   })
 
   it('completes a fulfillAvailableAdvancedOrders type', async () => {
@@ -121,20 +111,16 @@ describe('Seaport', () => {
     planner.addCommand(CommandType.SEAPORT, [value.toString(), calldata]);
     const { commands, inputs } = planner;
 
-    await(await mockERC721.connect(alice).mint(params0.offerer, params0.offer[0].identifierOrCriteria)).wait();
-    await(await mockERC721.connect(alice).mint(params1.offerer, params1.offer[0].identifierOrCriteria)).wait();
-    
+    await (await mockERC721.connect(alice).mint(params0.offerer, params0.offer[0].identifierOrCriteria)).wait();
+    await (await mockERC721.connect(alice).mint(params1.offerer, params1.offer[0].identifierOrCriteria)).wait();
+
     const owner0Before = await mockERC721.ownerOf(params0.offer[0].identifierOrCriteria);
     const owner1Before = await mockERC721.ownerOf(params1.offer[0].identifierOrCriteria);
-    //const ethBefore = await ethers.provider.getBalance(alice.address)
 
     await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait();
 
     const owner0After = await mockERC721.ownerOf(params0.offer[0].identifierOrCriteria);
     const owner1After = await mockERC721.ownerOf(params1.offer[0].identifierOrCriteria);
-    //const ethAfter = await ethers.provider.getBalance(alice.address)
-    // const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice)
-    // const ethDelta = ethBefore.sub(ethAfter)
 
     expect(owner0Before.toLowerCase()).to.eq(params0.offerer);
     expect(owner1Before.toLowerCase()).to.eq(params1.offerer);
@@ -144,12 +130,12 @@ describe('Seaport', () => {
   })
 
   it('reverts if order does not go through', async () => {
-    const MockSeaportRevert = await deployer.loadArtifact('MockSeaportRevert');    
-    
+    const MockSeaportRevert = await deployer.loadArtifact('MockSeaportRevert');
+
     let mockSeaport = await deployer.deploy(MockSeaportRevert, [mockERC721.address, alice.address]);
     mockSeaport = new Contract(mockSeaport.address, MockSeaportRevert.abi, alice);
     router = (await deployUniversalRouter(
-      permit2, 
+      permit2,
       ZERO_ADDRESS,
       mockSeaport.address
     )).connect(alice) as UniversalRouter;

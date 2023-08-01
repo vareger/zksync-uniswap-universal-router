@@ -1,30 +1,7 @@
 import JSBI from 'jsbi'
 import { BigintIsh } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
-// import { WETH, DAI, USDC, USDT } from './mainnetForkHelpers'
 import { BigNumber } from 'ethers'
-
-// v3
-// export const makePool = (token0: Token, token1: Token, liquidity: number) => {
-//   return new Pool(token0, token1, feeAmount, sqrtRatioX96, liquidity, TickMath.getTickAtSqrtRatio(sqrtRatioX96), [
-//     {
-//       index: nearestUsableTick(TickMath.MIN_TICK, TICK_SPACINGS[feeAmount]),
-//       liquidityNet: liquidity,
-//       liquidityGross: liquidity,
-//     },
-//     {
-//       index: nearestUsableTick(TickMath.MAX_TICK, TICK_SPACINGS[feeAmount]),
-//       liquidityNet: -liquidity,
-//       liquidityGross: liquidity,
-//     },
-//   ])
-// }
-
-// export const pool_DAI_WETH = makePool(DAI, WETH, liquidity)
-// export const pool_DAI_USDC = makePool(USDC, DAI, liquidity)
-// export const pool_USDC_WETH = makePool(USDC, WETH, liquidity)
-// export const pool_USDC_USDT = makePool(USDC, USDT, liquidity)
-// export const pool_WETH_USDT = makePool(USDT, WETH, liquidity)
 
 const FEE_SIZE = 3
 

@@ -3,7 +3,7 @@ import { BigNumber, Signature } from 'ethers'
 import { Permit2 } from '../../../../typechain'
 import { Provider } from 'zksync-web3'
 
-import {ethers} from 'ethers'
+import { ethers } from 'ethers'
 
 
 
@@ -95,26 +95,26 @@ export async function getPermitSignature(
   const verifyingContract = permit2.address;
   const DOMAIN_SEPARATOR = ethers.utils.keccak256(
     ethers.utils.defaultAbiCoder.encode(
-      ['bytes32', 'bytes32', 'uint256', 'address'], 
+      ['bytes32', 'bytes32', 'uint256', 'address'],
       [_TYPE_HASH, _HASHED_NAME, chainId, verifyingContract]
     )
   );
   const permitDetailsHash = ethers.utils.keccak256(
     ethers.utils.defaultAbiCoder.encode(
-      ['bytes32', 'address', 'uint160', 'uint48', 'uint48'], 
+      ['bytes32', 'address', 'uint160', 'uint48', 'uint48'],
       [_PERMIT_DETAILS_TYPEHASH, permitSingle.details.token, permitSingle.details.amount, permitSingle.details.expiration, permitSingle.details.nonce]
     )
   );
   const permitSingleHash = ethers.utils.keccak256(
     ethers.utils.defaultAbiCoder.encode(
-      ['bytes32', 'bytes32', 'address', 'uint256'], 
+      ['bytes32', 'bytes32', 'address', 'uint256'],
       [_PERMIT_SINGLE_TYPEHASH, permitDetailsHash, permitSingle.spender, permitSingle.sigDeadline]
     )
   );
   const hashTypedData = ethers.utils.keccak256(
     ethers.utils.hexConcat([
-      ethers.utils.arrayify(ethers.utils.toUtf8Bytes('\x19\x01')), 
-      DOMAIN_SEPARATOR, 
+      ethers.utils.arrayify(ethers.utils.toUtf8Bytes('\x19\x01')),
+      DOMAIN_SEPARATOR,
       permitSingleHash
     ])
   );
@@ -138,34 +138,34 @@ export async function getPermitBatchSignature(
   const verifyingContract = permit2.address;
   const DOMAIN_SEPARATOR = ethers.utils.keccak256(
     ethers.utils.defaultAbiCoder.encode(
-      ['bytes32', 'bytes32', 'uint256', 'address'], 
+      ['bytes32', 'bytes32', 'uint256', 'address'],
       [_TYPE_HASH, _HASHED_NAME, chainId, verifyingContract]
     )
   );
   let permitDetailsHashes: any[] = []
-  for(const i in permitBatch.details) {
+  for (const i in permitBatch.details) {
     let detail = permitBatch.details[i]
     permitDetailsHashes[i] = ethers.utils.keccak256(
       ethers.utils.defaultAbiCoder.encode(
-        ['bytes32', 'address', 'uint160', 'uint48', 'uint48'], 
+        ['bytes32', 'address', 'uint160', 'uint48', 'uint48'],
         [_PERMIT_DETAILS_TYPEHASH, detail.token, detail.amount, detail.expiration, detail.nonce]
       )
     );
   }
-  
+
   const permitHashesHash = ethers.utils.keccak256(
     ethers.utils.hexConcat(permitDetailsHashes)
   );
   const permitBatchHash = ethers.utils.keccak256(
     ethers.utils.defaultAbiCoder.encode(
-      ['bytes32', 'bytes32', 'address', 'uint256'], 
+      ['bytes32', 'bytes32', 'address', 'uint256'],
       [_PERMIT_BATCH_TYPEHASH, permitHashesHash, permitBatch.spender, permitBatch.sigDeadline]
     )
   );
   const hashTypedData = ethers.utils.keccak256(
     ethers.utils.hexConcat([
-      ethers.utils.arrayify(ethers.utils.toUtf8Bytes('\x19\x01')), 
-      DOMAIN_SEPARATOR, 
+      ethers.utils.arrayify(ethers.utils.toUtf8Bytes('\x19\x01')),
+      DOMAIN_SEPARATOR,
       permitBatchHash
     ])
   );

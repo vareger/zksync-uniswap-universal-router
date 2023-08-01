@@ -1,10 +1,10 @@
 import { CommandType, RoutePlanner } from './shared/planner';
 import { UniversalRouter, Permit2 } from '../../typechain';
-import { 
-    ALICE_ADDRESS, 
-    ALICE_PRIVATE_KEY,
-    DEADLINE, 
-    ZERO_ADDRESS
+import {
+  ALICE_ADDRESS,
+  ALICE_PRIVATE_KEY,
+  DEADLINE,
+  ZERO_ADDRESS
 } from './shared/constants';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
 import hre from 'hardhat';
@@ -25,7 +25,7 @@ describe('X2Y2', () => {
   let planner: RoutePlanner;
 
   before(async () => {
-   
+
     provider = Provider.getDefaultProvider();
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     let deployer = new Deployer(hre, alice);
@@ -39,7 +39,7 @@ describe('X2Y2', () => {
     cameo = await deployer.deploy(MockERC1155, [alice.address]);
   })
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     planner = new RoutePlanner();
   })
 
@@ -78,7 +78,7 @@ describe('X2Y2', () => {
       await (
         await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: erc721Order.price })
       ).wait();
-      
+
       const newOwner = await ens.connect(alice).ownerOf(erc721Order.token_id);
       await expect(newOwner).to.eq(ALICE_ADDRESS);
     })
@@ -90,7 +90,7 @@ describe('X2Y2', () => {
     let erc1155Order: X2Y2Order;
 
     beforeEach(async () => {
-     
+
       permit2 = (await deployPermit2()).connect(alice) as Permit2;
       router = (await deployUniversalRouter(
         permit2,
@@ -103,7 +103,7 @@ describe('X2Y2', () => {
       erc1155Order = x2y2Orders[1]
       const functionSelector = X2Y2_INTERFACE.getSighash(X2Y2_INTERFACE.getFunction('run'));
       const calldata = functionSelector + erc1155Order.input.slice(2);
-      
+
       await (await cameo.connect(alice).mint(router.address, erc1155Order.token_id, 1)).wait();
       planner.addCommand(CommandType.X2Y2_1155, [
         erc1155Order.price,
@@ -113,7 +113,7 @@ describe('X2Y2', () => {
         erc1155Order.token_id,
         1,
       ]);
-      ;({ commands, inputs } = planner);
+      ; ({ commands, inputs } = planner);
     })
 
     it('purchases 1 ERC-1155 on X2Y2', async () => {

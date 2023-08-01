@@ -27,7 +27,7 @@ describe('Cryptopunks', () => {
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     deployer = new Deployer(hre, alice);
     const MockCryptopunks = await deployer.loadArtifact('MockCryptopunks');
-    
+
     cryptopunks = await deployer.deploy(MockCryptopunks, [ALICE_ADDRESS]);
     cryptopunks = new Contract(cryptopunks.address, MockCryptopunks.abi, alice);
 
@@ -35,11 +35,11 @@ describe('Cryptopunks', () => {
     router = (await deployUniversalRouter(
       permit2,
       ZERO_ADDRESS,
-      ZERO_ADDRESS, 
       ZERO_ADDRESS,
-      ZERO_ADDRESS,  
       ZERO_ADDRESS,
-      ZERO_ADDRESS, 
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
       ZERO_ADDRESS,
       cryptopunks.address
     )).connect(alice) as UniversalRouter;
@@ -51,13 +51,13 @@ describe('Cryptopunks', () => {
       planner.addCommand(CommandType.CRYPTOPUNKS, [2976, ALICE_ADDRESS, value]);
       const { commands, inputs } = planner;
 
-        
+
       await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })).wait();
 
       // Expect that alice has the NFT
       let testAddress = await cryptopunks.punkIndexToAddress(2976);
       await expect(testAddress).to.eq(ALICE_ADDRESS);
-      
+
     })
   })
 })

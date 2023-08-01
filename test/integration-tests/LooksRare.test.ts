@@ -1,6 +1,6 @@
 import { UniversalRouter, Permit2 } from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS} from './shared/constants';
+import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS } from './shared/constants';
 import hre from 'hardhat';
 import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
@@ -39,7 +39,7 @@ describe('LooksRare', () => {
     deployer = new Deployer(hre, alice);
     planner = new RoutePlanner();
 
-          
+
     const MockERC721 = await deployer.loadArtifact('MockERC721');
     const MockERC1155 = await deployer.loadArtifact("MockERC1155");
     const MockLooksRare = await deployer.loadArtifact("MockLooksRare");
@@ -58,11 +58,11 @@ describe('LooksRare', () => {
     router = (await deployUniversalRouter(
       permit2,
       ZERO_ADDRESS,
-      ZERO_ADDRESS, 
       ZERO_ADDRESS,
-      ZERO_ADDRESS,  
       ZERO_ADDRESS,
-      ZERO_ADDRESS, 
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       mockLooksRare.address
@@ -81,7 +81,7 @@ describe('LooksRare', () => {
         router.address
       ));
       tokenId = makerOrder.tokenId;
-      await(await cryptoCovens.mint(router.address, tokenId)).wait();
+      await (await cryptoCovens.mint(router.address, tokenId)).wait();
 
     })
 
@@ -94,7 +94,7 @@ describe('LooksRare', () => {
       planner.addCommand(CommandType.LOOKS_RARE_721, [value, calldata, ALICE_ADDRESS, cryptoCovens.address, tokenId]);
       const { commands, inputs } = planner;
 
-      await(await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })).wait();
+      await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })).wait();
 
       await expect(await cryptoCovens.connect(alice).ownerOf(tokenId)).to.eq(ALICE_ADDRESS);
     })
@@ -109,7 +109,7 @@ describe('LooksRare', () => {
     let inputs: string[];
 
     beforeEach(async () => {
-      ;({ makerOrder, takerOrder, value } = createLooksRareOrders(
+      ; ({ makerOrder, takerOrder, value } = createLooksRareOrders(
         looksRareOrders[LOOKS_RARE_1155_ORDER],
         router.address
       ));
@@ -119,14 +119,14 @@ describe('LooksRare', () => {
         makerOrder,
       ]);
       planner.addCommand(CommandType.LOOKS_RARE_1155, [value, calldata, ALICE_ADDRESS, twerkyContract.address, tokenId, 1]);
-      ;({ commands, inputs } = planner);
-      await(await twerkyContract.mint(router.address, tokenId, 1)).wait();
+      ; ({ commands, inputs } = planner);
+      await (await twerkyContract.mint(router.address, tokenId, 1)).wait();
 
     })
 
     it('Buys a Twerky', async () => {
       await expect(await twerkyContract.balanceOf(alice.address, tokenId)).to.eq(0);
-      await(await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })).wait();
+      await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })).wait();
       await expect(await twerkyContract.balanceOf(alice.address, tokenId)).to.eq(1);
     })
   })

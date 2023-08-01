@@ -34,7 +34,7 @@ describe('NFTX', () => {
   let planner: RoutePlanner;
 
   before(async () => {
-   
+
     provider = Provider.getDefaultProvider();
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     let deployer = new Deployer(hre, alice);
@@ -55,16 +55,16 @@ describe('NFTX', () => {
 
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
     router = (await deployUniversalRouter(
-        permit2,
-        WETH.address,
-        ZERO_ADDRESS,
-        nftx_zap.address
+      permit2,
+      WETH.address,
+      ZERO_ADDRESS,
+      nftx_zap.address
     )).connect(alice) as UniversalRouter;
 
     planner = new RoutePlanner();
   })
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     planner = new RoutePlanner();
   })
 
@@ -176,7 +176,7 @@ describe('NFTX', () => {
     planner.addCommand(CommandType.NFTX, [value.toString(), calldata]);
     const { commands, inputs } = planner;
 
-   await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait();
+    await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait();
 
   })
 })

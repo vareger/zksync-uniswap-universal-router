@@ -1,6 +1,6 @@
 import { UniversalRouter, Permit2 } from '../../typechain';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
-import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS} from './shared/constants';
+import { ALICE_PRIVATE_KEY, ALICE_ADDRESS, DEADLINE, ZERO_ADDRESS } from './shared/constants';
 import hre from 'hardhat';
 import NFT20_ABI from './shared/abis/NFT20.json';
 import { BigNumber } from 'ethers';
@@ -30,14 +30,14 @@ describe('NFT20', () => {
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     deployer = new Deployer(hre, alice);
     const MockAlphabetties = await deployer.loadArtifact('MockAlphabetties');
-    
+
     mockAlphabetties = await deployer.deploy(MockAlphabetties, [ALICE_ADDRESS]);
     mockAlphabetties = new Contract(mockAlphabetties.address, MockAlphabetties.abi, alice);
 
 
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
     router = (await deployUniversalRouter(
-      permit2, 
+      permit2,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
@@ -46,8 +46,8 @@ describe('NFT20', () => {
       ZERO_ADDRESS,
       mockAlphabetties.address
     )).connect(alice) as UniversalRouter;
-    
-    
+
+
   })
 
   // In this test we will buy token ids 129, 193, 278 of Alphabetties (0x6d05064fe99e40f1c3464e7310a23ffaded56e20).
