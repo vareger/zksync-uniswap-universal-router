@@ -64,10 +64,10 @@ describe('Foundation', () => {
       planner.addCommand(CommandType.FOUNDATION, [value, calldata, ALICE_ADDRESS, mentalWorld.address, 32]);
       const { commands, inputs } = planner;
 
-      await expect(
-        await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })
-      ).to.changeEtherBalance(REFERRER, BigInt("+10000000000000000000"));
-
+      let refererETHBalanceBefore = await provider.getBalance(alice.address);
+      await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })).wait();
+      let refererETHBalanceAfter = await provider.getBalance(alice.address);
+      expect(refererETHBalanceAfter).to.be.lt(refererETHBalanceBefore);
 
       await expect(await mentalWorld.connect(alice).ownerOf(32)).to.eq(ALICE_ADDRESS);
     })

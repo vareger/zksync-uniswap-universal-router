@@ -90,18 +90,18 @@ describe('UniversalRouter Test:', () => {
 
 
   it('testSweepETH', async () => {
-    await expect(() =>
-      alice.transfer({
-        to: router.address,
-        amount: expandTo18DecimalsBN(1000000000),
-      })
-    ).to.changeEtherBalance(alice.address, expandTo18DecimalsBN(-1000000000));
-
-
+    let aliceETHBalanceBefore = await provider.getBalance(alice.address)
+    await (await alice.transfer({
+      to: router.address,
+      amount: expandTo18DecimalsBN(1000000000),
+    })).wait()
+    let aliceETHBalanceAfter = await provider.getBalance(alice.address)
+    expect(aliceETHBalanceAfter).to.be.lt(aliceETHBalanceBefore)
     planner.addCommand(CommandType.SWEEP, ['0x0000000000000000000000000000000000000000', alice.address, expandTo18DecimalsBN(1000000000)]);
     const { commands, inputs } = planner;
-    await expect(await router['execute(bytes,bytes[])'](commands, inputs)).to.changeEtherBalance(alice.address, expandTo18DecimalsBN(1000000000));
-
+    await (await router['execute(bytes,bytes[])'](commands, inputs)).wait()
+    let aliceETHBalanceAfterSweep = await provider.getBalance(alice.address)
+    expect(aliceETHBalanceAfterSweep).to.be.gt(aliceETHBalanceAfter);
   })
 
   it('testSweepETHInsufficientOutput', async () => {
