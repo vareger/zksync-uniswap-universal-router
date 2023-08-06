@@ -11,26 +11,26 @@ import { expandTo18DecimalsBN } from '../integration-tests/shared/helpers';
 import { RoutePlanner, CommandType } from '../integration-tests/shared/planner';
 import { expect } from 'chai';
 
-/**
- * $ yarn hardhat test test/integration-tests/UniversalRouter.test.ts --network zkSyncLocalhost
- */
 describe('UniversalRouter Test:', () => {
   let provider: Provider;
   let alice: Wallet;
   let permit2: Permit2;
-  let router: Contract;
+  let router: UniversalRouter;
   let erc20: Contract;
   let erc1155: Contract;
   let callback: Contract;
   let interfaceIDs: Contract;
   let planner: RoutePlanner;
   let deployer: Deployer;
+  let AMOUNT: any = expandTo18DecimalsBN(1);
+  let RECIPIENT: any;
 
   beforeEach(async () => {
-
     provider = Provider.getDefaultProvider();
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     deployer = new Deployer(hre, alice);
+
+    RECIPIENT = alice.address;
 
     const MockERC20 = await deployer.loadArtifact("MockERC20");
     const MockERC1155 = await deployer.loadArtifact("MockERC1155");
@@ -52,107 +52,85 @@ describe('UniversalRouter Test:', () => {
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
     router = (await deployRouter(permit2)).connect(alice) as UniversalRouter;
 
-    await (await erc20.connect(alice).mint(alice.address, expandTo18DecimalsBN(1))).wait();
-
-
     planner = new RoutePlanner();
   })
 
-
   it('testSweepToken', async () => {
-    await (await erc20.connect(alice).mint(router.address, expandTo18DecimalsBN(1))).wait();
+    await (await erc20.connect(alice).mint(router.address, AMOUNT)).wait();
+    expect((await erc20.balanceOf(router.address)).toString()).to.be.equal(AMOUNT);
 
-    expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('1000000000000000000');
-
-    planner.addCommand(CommandType.SWEEP, [erc20.address, alice.address, expandTo18DecimalsBN(1)]);
+    planner.addCommand(CommandType.SWEEP, [erc20.address, RECIPIENT, AMOUNT]);
     const { commands, inputs } = planner;
     await (await router['execute(bytes,bytes[])'](commands, inputs)).wait();
 
-    expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('0');
-    expect((await erc20.balanceOf(alice.address)).toString()).to.be.equal('2000000000000000000');
-
-
+    expect((await erc20.balanceOf(RECIPIENT)).toString()).to.be.equal(AMOUNT);
   })
 
   it('testSweepTokenInsufficientOutput', async () => {
-    await (await erc20.connect(alice).mint(router.address, expandTo18DecimalsBN(1))).wait();
+    await (await erc20.connect(alice).mint(router.address, AMOUNT)).wait();
+    expect((await erc20.balanceOf(RECIPIENT)).toString()).to.be.equal('0');
 
-    expect((await erc20.balanceOf(router.address)).toString()).to.be.equal('1000000000000000000');
-
-
-    planner.addCommand(CommandType.SWEEP, [erc20.address, alice.address, expandTo18DecimalsBN(2)]);
+    planner.addCommand(CommandType.SWEEP, [erc20.address, RECIPIENT, expandTo18DecimalsBN(2)]);
     const { commands, inputs } = planner;
     await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(router, 'InsufficientToken');
-
-
-
   })
 
 
   it('testSweepETH', async () => {
-    let aliceETHBalanceBefore = await provider.getBalance(alice.address)
+    let aliceETHBalanceBefore = await provider.getBalance(RECIPIENT)
     await (await alice.transfer({
       to: router.address,
       amount: expandTo18DecimalsBN(1000000000),
     })).wait()
-    let aliceETHBalanceAfter = await provider.getBalance(alice.address)
+    let aliceETHBalanceAfter = await provider.getBalance(RECIPIENT)
     expect(aliceETHBalanceAfter).to.be.lt(aliceETHBalanceBefore)
-    planner.addCommand(CommandType.SWEEP, ['0x0000000000000000000000000000000000000000', alice.address, expandTo18DecimalsBN(1000000000)]);
+    planner.addCommand(CommandType.SWEEP, ['0x0000000000000000000000000000000000000000', RECIPIENT, expandTo18DecimalsBN(1000000000)]);
     const { commands, inputs } = planner;
     await (await router['execute(bytes,bytes[])'](commands, inputs)).wait()
-    let aliceETHBalanceAfterSweep = await provider.getBalance(alice.address)
+    let aliceETHBalanceAfterSweep = await provider.getBalance(RECIPIENT)
     expect(aliceETHBalanceAfterSweep).to.be.gt(aliceETHBalanceAfter);
   })
 
   it('testSweepETHInsufficientOutput', async () => {
-
-    planner.addCommand(CommandType.SWEEP, ['0x0000000000000000000000000000000000000000', alice.address, expandTo18DecimalsBN(1000000001)]);
+    planner.addCommand(CommandType.SWEEP, ['0x0000000000000000000000000000000000000000', RECIPIENT, expandTo18DecimalsBN(1000000001)]);
     const { commands, inputs } = planner;
     const value = expandTo18DecimalsBN(1000000000);
     await expect(router['execute(bytes,bytes[])'](commands, inputs, { value })).to.be.revertedWithCustomError(router, 'InsufficientETH');
-
   })
 
   it('testSweepERC1155NotFullAmount', async () => {
-    await (await erc1155.connect(alice).mint(router.address, 1, expandTo18DecimalsBN(1))).wait();
+    let id = 0;
+    await (await erc1155.connect(alice).mint(router.address, id, AMOUNT)).wait();
 
-    expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('1000000000000000000');
+    expect((await erc1155.balanceOf(RECIPIENT, id)).toString()).to.be.equal('0');
 
-    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, alice.address, 1, expandTo18DecimalsBN(0.5)]);
+    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, RECIPIENT, id, expandTo18DecimalsBN(0.5)]);
     const { commands, inputs } = planner;
     await (await router['execute(bytes,bytes[])'](commands, inputs)).wait();
 
-    expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('0');
-    expect((await erc1155.balanceOf(alice.address, 1)).toString()).to.be.equal('1000000000000000000');
-
-
+    expect((await erc1155.balanceOf(RECIPIENT, id)).toString()).to.be.equal(AMOUNT);
   })
 
   it('testSweepERC1155', async () => {
-    await (await erc1155.connect(alice).mint(router.address, 1, expandTo18DecimalsBN(1))).wait();
+    let id = 0;
+    await (await erc1155.connect(alice).mint(router.address, id, AMOUNT)).wait();
 
-    expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('1000000000000000000');
+    expect((await erc1155.balanceOf(RECIPIENT, id)).toString()).to.be.equal('0');
 
-    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, alice.address, 1, expandTo18DecimalsBN(1)]);
+    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, RECIPIENT, id, AMOUNT]);
     const { commands, inputs } = planner;
     await (await router['execute(bytes,bytes[])'](commands, inputs)).wait();
 
-    expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('0');
-    expect((await erc1155.balanceOf(alice.address, 1)).toString()).to.be.equal('1000000000000000000');
-
-
+    expect((await erc1155.balanceOf(RECIPIENT, id)).toString()).to.be.equal(AMOUNT);
   })
 
   it('testSweepERC1155', async () => {
-    await (await erc1155.connect(alice).mint(router.address, 1, expandTo18DecimalsBN(1))).wait();
+    let id = 0
+    await (await erc1155.connect(alice).mint(router.address, id, AMOUNT)).wait();
 
-    expect((await erc1155.balanceOf(router.address, 1)).toString()).to.be.equal('1000000000000000000');
-
-    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, alice.address, 1, expandTo18DecimalsBN(2)]);
+    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, RECIPIENT, id, expandTo18DecimalsBN(2)]);
     const { commands, inputs } = planner;
     await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(router, 'InsufficientToken');
-
-
   })
 
   it('testSupportsInterface', async () => {
@@ -165,7 +143,5 @@ describe('UniversalRouter Test:', () => {
 
     let IERC165ID = await interfaceIDs.getIERC165InterfaceId();
     expect((await callback.supportsInterface(IERC165ID)).toString()).to.be.equal('true');
-
   })
-
 })
