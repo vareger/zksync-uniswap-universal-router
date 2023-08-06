@@ -11,7 +11,6 @@ import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRo
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 import { Wallet, Provider, Contract } from 'zksync-web3';
 
-
 describe('Cryptopunks', () => {
   let provider: Provider;
   let alice: Wallet;
@@ -27,9 +26,7 @@ describe('Cryptopunks', () => {
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     deployer = new Deployer(hre, alice);
     const MockCryptopunks = await deployer.loadArtifact('MockCryptopunks');
-
     cryptopunks = await deployer.deploy(MockCryptopunks, [ALICE_ADDRESS]);
-    cryptopunks = new Contract(cryptopunks.address, MockCryptopunks.abi, alice);
 
     permit2 = (await deployPermit2()).connect(alice) as Permit2;
     router = (await deployUniversalRouter(
@@ -55,8 +52,7 @@ describe('Cryptopunks', () => {
       await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value: value })).wait();
 
       // Expect that alice has the NFT
-      let testAddress = await cryptopunks.punkIndexToAddress(2976);
-      await expect(testAddress).to.eq(ALICE_ADDRESS);
+      await expect((await cryptopunks.punkIndexToAddress(2976))).to.eq(ALICE_ADDRESS)
 
     })
   })

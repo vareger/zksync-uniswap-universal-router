@@ -7,12 +7,9 @@ import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 import { expect } from 'chai';
-
 import "@matterlabs/hardhat-zksync-chai-matchers";
 import { CommandType, RoutePlanner } from './shared/planner';
 const { ethers } = hre;
-
-
 const NFT20_INTERFACE = new ethers.utils.Interface(NFT20_ABI);
 
 describe('NFT20', () => {

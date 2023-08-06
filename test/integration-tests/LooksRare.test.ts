@@ -19,8 +19,6 @@ import {
   TakerOrder,
 } from './shared/protocolHelpers/looksRare';
 
-
-
 describe('LooksRare', () => {
   let provider: Provider;
   let alice: Wallet;

@@ -15,7 +15,6 @@ import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 import { expandTo18DecimalsBN } from './shared/helpers';
 import hre from 'hardhat';
 const { ethers } = hre;
-
 const nftxZapInterface = new ethers.utils.Interface(NFTX_ZAP_ABI);
 import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types';
 import WETH9Artifact from "./shared/abis/WETH9.json"
@@ -134,7 +133,6 @@ describe('NFTX', () => {
 
     const tx = await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value });
     await tx.wait();
-    // const tokenIds = parseEvents(twerkyContract.interface, receipt).map((event) => event!.args.id)
     expect(await twerkyContract.balanceOf(alice.address, 0)).to.eq(1);
     expect(await twerkyContract.balanceOf(alice.address, 1)).to.eq(1);
   })

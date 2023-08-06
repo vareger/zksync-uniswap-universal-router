@@ -13,7 +13,6 @@ import { X2Y2Order, x2y2Orders, X2Y2_INTERFACE } from './shared/protocolHelpers/
 import { Wallet, Provider, Contract } from 'zksync-web3';
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 
-
 describe('X2Y2', () => {
   let provider: Provider;
   let alice: Wallet;

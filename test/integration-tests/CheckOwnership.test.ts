@@ -19,11 +19,6 @@ import {
 import hre from 'hardhat';
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter';
 
-
-/**
- * $ yarn hardhat test test/integration-tests/CheckOwnership.test.ts --network zkSyncLocalhost 
- */
-
 describe('Check Ownership', () => {
   let provider: Provider;
   let alice: Wallet;
@@ -35,7 +30,6 @@ describe('Check Ownership', () => {
   let looksRare1155: Contract;
 
   before(async () => {
-
     provider = Provider.getDefaultProvider();
     alice = new Wallet(ALICE_PRIVATE_KEY, provider);
     let deployer = new Deployer(hre, alice);
@@ -56,11 +50,6 @@ describe('Check Ownership', () => {
     )).connect(alice) as UniversalRouter;
 
     planner = new RoutePlanner();
-
-    // console.log("permit2 address: " + permit2.address);
-    // console.log("router address: " + router.address);
-    // console.log("cryptoCovens address: " + cryptoCovens.address);
-    // console.log("seaport address: " + seaport.address);
   })
 
   describe('checksOwnership ERC721', () => {
@@ -73,7 +62,6 @@ describe('Check Ownership', () => {
       const { advancedOrder } = getAdvancedOrderParams(seaportOrders[0]);
       const params = advancedOrder.parameters;
 
-
       planner.addCommand(CommandType.OWNER_CHECK_721, [
         ZERO_ADDRESS,
         cryptoCovens.address,
@@ -85,7 +73,6 @@ describe('Check Ownership', () => {
     })
 
     it('reverts for invalid ownership', async () => {
-
       const { advancedOrder } = getAdvancedOrderParams(seaportOrders[0]);
       const params = advancedOrder.parameters;
       planner.addCommand(CommandType.OWNER_CHECK_721, [

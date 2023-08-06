@@ -9,9 +9,7 @@ import { BigNumber } from 'ethers';
 import { Wallet, Provider, Contract } from 'zksync-web3';
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 import { expect } from 'chai';
-
 const { ethers } = hre;
-
 const SUDOSWAP_INTERFACE = new ethers.utils.Interface(SUDOSWAP_ABI);
 
 describe('Sudoswap', () => {

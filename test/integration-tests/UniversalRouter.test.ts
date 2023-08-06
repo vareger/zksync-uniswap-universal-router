@@ -6,14 +6,11 @@ import {
 } from './shared/constants';
 import NFTX_ZAP_ABI from './shared/abis/NFTXZap.json';
 import { Wallet, Provider, Contract } from 'zksync-web3';
-
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 import { deployPermit2, deployRouter } from './shared/deployUniversalRouter';
 import { deployUniswapV2 } from './shared/deployUniswapV2';
-
 import "@matterlabs/hardhat-zksync-chai-matchers";
 import { expect } from 'chai';
-
 import {
   ADDRESS_THIS,
   DEADLINE,
@@ -24,7 +21,6 @@ import {
   MAX_UINT160,
   MAX_UINT,
 } from './shared/constants';
-
 import { CommandType, RoutePlanner } from './shared/planner';
 import { expandTo18DecimalsBN } from './shared/helpers';
 import hre from 'hardhat';
@@ -36,13 +32,10 @@ import {
   seaportInterface,
   seaportOrders
 } from './shared/protocolHelpers/seaport';
-
-
 const { ethers } = hre;
 const nftxZapInterface = new ethers.utils.Interface(NFTX_ZAP_ABI);
 import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types';
 import WETH9Artifact from "./shared/abis/WETH9.json"
-
 
 describe('UniversalRouter', () => {
   let provider: Provider;
@@ -344,7 +337,5 @@ describe('UniversalRouter', () => {
       expect(balanceAfter.sub(balanceBefore)).to.eq(amountRewards);
     })
   })
-
-
 
 })
