@@ -103,10 +103,11 @@ contract MockSeaport {
         alice = _alice;
     }
 
-    function fulfillOrder(
-        Order memory order,
-        bytes32 fulfillerConduitKey
-    ) external payable returns (bool success, bytes memory output) {
+    function fulfillOrder(Order memory order, bytes32 fulfillerConduitKey)
+        external
+        payable
+        returns (bool success, bytes memory output)
+    {
         bytes memory _output = bytes('0x8baa579f');
         bool _success = false;
 

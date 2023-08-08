@@ -6,10 +6,12 @@ import {LSSVMPair} from './LSSVMPair.sol';
 
 contract MockSudoswap is ERC721 {
     address public alice;
+
     struct PairSwapSpecific {
         LSSVMPair pair;
         uint256[] nftIds;
     }
+
     struct RobustPairSwapSpecific {
         PairSwapSpecific swapInfo;
         uint256 maxCost;

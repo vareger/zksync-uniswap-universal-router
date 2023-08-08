@@ -30,6 +30,7 @@ contract MockSeaportRevert {
         OrderParameters parameters;
         bytes signature;
     }
+
     struct ReceivedItem {
         ItemType itemType;
         address token;
@@ -37,6 +38,7 @@ contract MockSeaportRevert {
         uint256 amount;
         address payable recipient;
     }
+
     struct Execution {
         ReceivedItem item;
         address offerer;
@@ -101,10 +103,11 @@ contract MockSeaportRevert {
         alice = _alice;
     }
 
-    function fulfillOrder(
-        Order memory order,
-        bytes32 fulfillerConduitKey
-    ) external payable returns (bool success, bytes memory output) {
+    function fulfillOrder(Order memory order, bytes32 fulfillerConduitKey)
+        external
+        payable
+        returns (bool success, bytes memory output)
+    {
         order;
         fulfillerConduitKey;
         bytes memory _output = bytes('0x8baa579f');

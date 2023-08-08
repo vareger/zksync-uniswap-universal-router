@@ -4,12 +4,7 @@ import { Permit2, UniversalRouter } from '../../../typechain'
 import { Wallet, Provider } from 'zksync-web3'
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy'
 
-import {
-  ALICE_PRIVATE_KEY,
-  ZERO_ADDRESS,
-  V2_INIT_CODE_HASH_MAINNET,
-  V3_INIT_CODE_HASH_MAINNET,
-} from './constants'
+import { ALICE_PRIVATE_KEY, ZERO_ADDRESS, V2_INIT_CODE_HASH_MAINNET, V3_INIT_CODE_HASH_MAINNET } from './constants'
 
 export async function deployRouter(
   permit2: Permit2,
@@ -30,7 +25,6 @@ export async function deployRouter(
   mockLooksRareRewardsDistributor?: string,
   mockLooksRareToken?: string
 ): Promise<UniversalRouter> {
-
   mockLooksRareRewardsDistributor
   mockLooksRareToken
   const routerParameters = {
@@ -102,6 +96,12 @@ export async function deployRouterAndPermit2(
   mockLooksRareToken?: string
 ): Promise<[UniversalRouter, Permit2]> {
   const permit2 = await deployPermit2()
-  const router = await deployRouter(permit2, ZERO_ADDRESS, ZERO_ADDRESS, mockLooksRareRewardsDistributor, mockLooksRareToken)
+  const router = await deployRouter(
+    permit2,
+    ZERO_ADDRESS,
+    ZERO_ADDRESS,
+    mockLooksRareRewardsDistributor,
+    mockLooksRareToken
+  )
   return [router, permit2]
 }

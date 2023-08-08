@@ -10,12 +10,12 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 task('deployZkSyncEra')
-    .addParam('privateKey', 'Private key used to deploy')
-    .addParam('params', "Path to params json")
-    .addFlag('verify', 'Whether verify the contracts')
-    .setAction(async (taskArgs) => {
-      await deployZkSyncEra(taskArgs)
-    })
+  .addParam('privateKey', 'Private key used to deploy')
+  .addParam('params', 'Path to params json')
+  .addFlag('verify', 'Whether verify the contracts')
+  .setAction(async (taskArgs) => {
+    await deployZkSyncEra(taskArgs)
+  })
 
 const DEFAULT_COMPILER_SETTINGS = {
   version: '0.8.17',
@@ -46,13 +46,13 @@ export default {
       url: 'https://testnet.era.zksync.dev',
       ethNetwork: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       zksync: true,
-      verifyURL: 'https://zksync2-testnet-explorer.zksync.dev/contract_verification'
+      verifyURL: 'https://zksync2-testnet-explorer.zksync.dev/contract_verification',
     },
     zkSyncMainnet: {
       url: 'https://mainnet.era.zksync.io',
       ethNetwork: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       zksync: true,
-      verifyURL: 'https://zksync2-mainnet-explorer.zksync.io/contract_verification'
+      verifyURL: 'https://zksync2-mainnet-explorer.zksync.io/contract_verification',
     },
   },
   defaultNetwork: 'zkSyncLocalhost',
@@ -63,8 +63,8 @@ export default {
     compilers: [DEFAULT_COMPILER_SETTINGS],
   },
   zksolc: {
-    version: "1.3.13",
-    compilerSource: "binary",
+    version: '1.3.13',
+    compilerSource: 'binary',
     settings: {
       metadata: {
         bytecodeHash: 'none',

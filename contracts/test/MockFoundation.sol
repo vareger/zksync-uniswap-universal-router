@@ -13,7 +13,7 @@ contract MockFoundation {
         tokenId;
         maxPrice;
         uint256 fee = 10000000000000000000;
-        (bool success, ) = referrer.call{value: fee}('');
+        (bool success,) = referrer.call{value: fee}('');
         success;
     }
 }

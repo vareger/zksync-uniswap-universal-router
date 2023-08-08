@@ -2,10 +2,9 @@
 pragma solidity ^0.8.0;
 
 contract MockPermit2Hash {
-    bytes32 public constant _PERMIT_SINGLE_TYPEHASH =
-        keccak256(
-            'PermitSingle(PermitDetails details,address spender,uint256 sigDeadline)PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)'
-        );
+    bytes32 public constant _PERMIT_SINGLE_TYPEHASH = keccak256(
+        'PermitSingle(PermitDetails details,address spender,uint256 sigDeadline)PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)'
+    );
     bytes32 public constant _PERMIT_DETAILS_TYPEHASH =
         keccak256('PermitDetails(address token,uint160 amount,uint48 expiration,uint48 nonce)');
 
@@ -50,10 +49,9 @@ contract MockPermit2Hash {
     }
 
     function DOMAIN_SEPARATOR() public view returns (bytes32) {
-        return
-            block.chainid == _CACHED_CHAIN_ID
-                ? _CACHED_DOMAIN_SEPARATOR
-                : _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME);
+        return block.chainid == _CACHED_CHAIN_ID
+            ? _CACHED_DOMAIN_SEPARATOR
+            : _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME);
     }
 
     function hashPermitDetails(PermitDetails memory details) public pure returns (bytes32) {
@@ -62,10 +60,9 @@ contract MockPermit2Hash {
 
     function hashPerimitSingle(PermitSingle memory permitSingle) public pure returns (bytes32) {
         bytes32 permitDetailsHash = hashPermitDetails(permitSingle.details);
-        return
-            keccak256(
-                abi.encode(_PERMIT_SINGLE_TYPEHASH, permitDetailsHash, permitSingle.spender, permitSingle.sigDeadline)
-            );
+        return keccak256(
+            abi.encode(_PERMIT_SINGLE_TYPEHASH, permitDetailsHash, permitSingle.spender, permitSingle.sigDeadline)
+        );
     }
 
     /// @notice Creates an EIP-712 typed data hash
