@@ -5,6 +5,7 @@ import { Wallet, Provider } from 'zksync-web3'
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy'
 
 import { ALICE_PRIVATE_KEY, ZERO_ADDRESS, V2_INIT_CODE_HASH_MAINNET, V3_INIT_CODE_HASH_MAINNET } from './constants'
+import {HttpNetworkConfig} from "hardhat/src/types/config";
 
 export async function deployRouter(
   permit2: Permit2,
@@ -48,7 +49,8 @@ export async function deployRouter(
   }
 
   // Initialize the wallet.
-  const provider = Provider.getDefaultProvider()
+  //const provider = Provider.getDefaultProvider()
+  const provider = new Provider((hre.network.config as HttpNetworkConfig).url);
   const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
 
   // Create deployer object and load the artifact of the contract you want to deploy.
@@ -79,7 +81,8 @@ export async function deployMockPermit2(): Promise<Permit2> {
 
 export async function deployPermit2(): Promise<Permit2> {
   // Initialize the wallet.
-  const provider = Provider.getDefaultProvider()
+  //const provider = Provider.getDefaultProvider()
+  const provider = new Provider((hre.network.config as HttpNetworkConfig).url);
   const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
 
   // Create deployer object and load the artifact of the contract you want to deploy.

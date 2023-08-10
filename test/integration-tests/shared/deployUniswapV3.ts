@@ -9,6 +9,7 @@ import UniswapV3FactoryArtifact from './abis/UniswapV3Factory.json'
 import SwapRouterArtifact from './abis/SwapRouter.json'
 import NonfungibleTokenPositionDescriptorArtifact from './abis/NonfungibleTokenPositionDescriptor.json'
 import NonfungiblePositionManagerArtifact from './abis/NonfungiblePositionManager.json'
+import {HttpNetworkConfig} from "hardhat/src/types/config";
 
 export type UniswapV3Factory = Contract
 export type NonfungiblePositionManager = Contract
@@ -19,7 +20,8 @@ export async function deployUniswapV3(
   wethAddress: string
 ): Promise<[UniswapV3Factory, NonfungiblePositionManager, SwapRouter]> {
   // Initialize the wallet.
-  const provider = Provider.getDefaultProvider()
+  //const provider = Provider.getDefaultProvider()
+  const provider = new Provider((hre.network.config as HttpNetworkConfig).url);
   const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
   const deployer = new Deployer(hre, wallet)
 

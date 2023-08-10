@@ -10,13 +10,14 @@ import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types'
 import UniswapV2FactoryArtifact from './abis/UniswapV2Factory.json'
 import UniswapV2Router02Artifact from './abis/UniswapV2Router02.json'
 import UniswapV2PairArtifact from './abis/UniswapV2Pair.json'
+import {HttpNetworkConfig} from "hardhat/src/types/config";
 
 export type UniswapV2Factory = Contract
 export type UniswapV2Router02 = Contract
 
 export async function deployUniswapV2(wethAddress: string): Promise<[UniswapV2Factory, UniswapV2Router02]> {
   // Initialize the wallet.
-  const provider = Provider.getDefaultProvider()
+  const provider = new Provider((hre.network.config as HttpNetworkConfig).url);
   const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
   const deployer = new Deployer(hre, wallet)
 
