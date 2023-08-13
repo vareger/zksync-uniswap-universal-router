@@ -1,60 +1,77 @@
 import type { Contract } from '@ethersproject/contracts'
+///!!!
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { Pair } from '@uniswap/v2-sdk'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { parseEvents, V2_EVENTS, V3_EVENTS } from './shared/parseEvents'
 import { expect } from './shared/expect'
-import { encodePath } from './shared/swapRouter02Helpers'
+import { encodePath } from './shared/zkSyncEra/swapRouter02Helpers'
 import { BigNumber, BigNumberish } from 'ethers'
 import { Permit2, UniversalRouter } from '../../typechain'
-import { abi as TOKEN_ABI } from '../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
-import { resetFork, WETH, DAI, USDC, USDT } from './shared/mainnetForkHelpers'
+import { abi as TOKEN_ABI } from '../../artifacts-zk/solmate/src/tokens/ERC20.sol/ERC20.json'
 import {
   ADDRESS_THIS,
-  ALICE_ADDRESS,
   CONTRACT_BALANCE,
   DEADLINE,
-  ETH_ADDRESS,
+  ETH_ADDRESS, IN_MEMORY_NODE_RICH_WALLETS,
   MAX_UINT,
   MAX_UINT160,
   MSG_SENDER,
   ONE_PERCENT_BIPS,
   SOURCE_MSG_SENDER,
   SOURCE_ROUTER,
-} from './shared/constants'
+} from './shared/zkSyncEra/constants'
 import { expandTo18DecimalsBN } from './shared/helpers'
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter'
+import deployUniversalRouter, { deployPermit2 } from './shared/zkSyncEra/deployUniversalRouter'
 import { RoutePlanner, CommandType } from './shared/planner'
 import hre from 'hardhat'
-import { getPermitSignature, getPermitBatchSignature, PermitSingle } from './shared/protocolHelpers/permit2'
+import { getPermitSignature, getPermitBatchSignature, PermitSingle } from './shared/zkSyncEra/permit2'
+import {Wallet, Provider} from "zksync-web3";
+import {HttpNetworkConfig} from "hardhat/types";
+import completeFixture from "@uniswap/v3-periphery/test/shared/completeFixture"
+import {Token} from "@uniswap/sdk-core";
 const { ethers } = hre
 
 describe('Uniswap V2 and V3 Tests:', () => {
-  let alice: SignerWithAddress
-  let bob: SignerWithAddress
+  let alice: Wallet
+  let bob: Wallet
   let router: UniversalRouter
   let permit2: Permit2
   let daiContract: Contract
   let wethContract: Contract
   let usdcContract: Contract
   let planner: RoutePlanner
+  let provider: Provider
+  let USDC: Token
+  let USDT: Token
+  let WETH: Token
+  let DAI: Token
+
+  async function setState(){
+    return 0;
+  }
 
   beforeEach(async () => {
-    await resetFork()
-    await hre.network.provider.request({
-      method: 'hardhat_impersonateAccount',
-      params: [ALICE_ADDRESS],
-    })
-    alice = await ethers.getSigner(ALICE_ADDRESS)
-    bob = (await ethers.getSigners())[1]
+    provider = new Provider((hre.network.config as HttpNetworkConfig).url);
+    alice = new Wallet(IN_MEMORY_NODE_RICH_WALLETS[0].privateKey, provider)
+    bob = new Wallet(IN_MEMORY_NODE_RICH_WALLETS[1].privateKey, provider)
+
+    const fixture = await completeFixture([alice])
+
+    DAI = fixture.tokens[0]
+    USDC = fixture.tokens[1]
+    USDT = fixture.tokens[2]
+    WETH = fixture.weth9
+
     daiContract = new ethers.Contract(DAI.address, TOKEN_ABI, bob)
-    wethContract = new ethers.Contract(WETH.address, TOKEN_ABI, bob)
     usdcContract = new ethers.Contract(USDC.address, TOKEN_ABI, bob)
+    wethContract = new ethers.Contract(WETH.address, TOKEN_ABI, bob)
+
     permit2 = (await deployPermit2()).connect(bob) as Permit2
     router = (await deployUniversalRouter(permit2)).connect(bob) as UniversalRouter
     planner = new RoutePlanner()
 
+    await setState();
     // alice gives bob some tokens
     await daiContract.connect(alice).transfer(bob.address, expandTo18DecimalsBN(100000))
     await wethContract.connect(alice).transfer(bob.address, expandTo18DecimalsBN(100))

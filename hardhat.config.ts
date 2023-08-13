@@ -39,6 +39,11 @@ export default {
       ethNetwork: 'http://localhost:8545',
       zksync: true,
     },
+    zkSyncTestNode: {
+      url: "http://localhost:8011",
+      ethNetwork: "http://localhost:8545",
+      zksync: true,
+    },
     zkSyncTestnet: {
       url: 'https://testnet.era.zksync.dev',
       ethNetwork: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -52,7 +57,7 @@ export default {
       verifyURL: 'https://zksync2-mainnet-explorer.zksync.io/contract_verification'
     },
   },
-  defaultNetwork: 'zkSyncLocalhost',
+  defaultNetwork: 'zkSyncTestNode',
   namedAccounts: {
     deployer: 0,
   },
