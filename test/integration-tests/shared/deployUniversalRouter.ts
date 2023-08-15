@@ -42,56 +42,48 @@ export async function deployRouter(
     poolInitCodeHash: V3_INIT_CODE_HASH,
   }
 
-  const router = (await deployContract('UniversalRouter', [routerParameters])) as unknown as UniversalRouter
-  return router
+  return (await deployContract('UniversalRouter', [routerParameters])) as unknown as UniversalRouter
 }
 
 export default deployRouter
 
 export async function deployPermit2(): Promise<Permit2> {
-  const permit2 = (await deployContract('Permit2')) as unknown as Permit2
-  return permit2
+  return (await deployContract('Permit2')) as unknown as Permit2
 }
 
 export async function deployWeth(): Promise<IWETH9> {
-  const weth9 = (await deployContractWithArtifact(WETH9 as ZkSyncArtifact)) as IWETH9
-  return weth9
+  return (await deployContractWithArtifact(WETH9 as ZkSyncArtifact)) as IWETH9
 }
 
 export async function deployV2Factory(): Promise<Contract> {
   const contractFactory = new ContractFactory(FACTORY_V2_ARTIFACT.abi, FACTORY_V2_ARTIFACT.bytecode, getWallets()[0])
 
   const factoryDeps = [PAIR_V2_ARTIFACT.bytecode]
-  const factory = await contractFactory.deploy(ethers.constants.AddressZero, {
+  return await contractFactory.deploy(ethers.constants.AddressZero, {
     customData: {
       factoryDeps,
     },
   })
-
-  return factory
 }
 
 export async function deployV3Factory(): Promise<Contract> {
   const contractFactory = new ContractFactory(FACTORY_ARTIFACT.abi, FACTORY_ARTIFACT.bytecode, getWallets()[0])
 
   let factoryDeps: string[] = [POOL_ARTIFACT.bytecode]
-  const factory = await contractFactory.deploy({
+  return await contractFactory.deploy({
     customData: {
       factoryDeps,
     },
   })
-
-  return factory
 }
 
 export async function deployNftManager(v3Factory: string, weth9: string): Promise<Contract> {
-  const nftManager = await deployContractWithArtifact(NFT_MANAGER_ARTIFACT as ZkSyncArtifact, [
+  return await deployContractWithArtifact(NFT_MANAGER_ARTIFACT as ZkSyncArtifact, [
     v3Factory,
     weth9,
     // Isn't needed for the tests
     ethers.constants.AddressZero,
   ])
-  return nftManager
 }
 
 export async function deployRouterAndPermit2(
