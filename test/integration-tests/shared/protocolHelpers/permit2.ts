@@ -73,9 +73,9 @@ export function getEip712Domain(chainId: number, verifyingContract: string) {
 }
 
 export async function signPermit(
-    permit: PermitSingle,
-    signer: Wallet,
-    verifyingContract: string
+  permit: PermitSingle,
+  signer: Wallet,
+  verifyingContract: string
 ): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
   const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_TYPE, permit)
@@ -84,9 +84,9 @@ export async function signPermit(
 }
 
 export async function getPermitSignature(
-    permit: PermitSingle,
-    signer: Wallet,
-    permit2: Permit2
+  permit: PermitSingle,
+  signer: Wallet,
+  permit2: Permit2
 ): Promise<string> {
   // look up the correct nonce for this permit
   const nextNonce = (await permit2.allowance(signer.address, permit.details.token, permit.spender)).nonce
@@ -95,9 +95,9 @@ export async function getPermitSignature(
 }
 
 export async function getPermitBatchSignature(
-    permit: PermitBatch,
-    signer: Wallet,
-    permit2: Permit2
+  permit: PermitBatch,
+  signer: Wallet,
+  permit2: Permit2
 ): Promise<string> {
   for (const i in permit.details) {
     const nextNonce = (await permit2.allowance(signer.address, permit.details[i].token, permit.spender)).nonce
@@ -108,9 +108,9 @@ export async function getPermitBatchSignature(
 }
 
 export async function signPermitBatch(
-    permit: PermitBatch,
-    signer: Wallet,
-    verifyingContract: string
+  permit: PermitBatch,
+  signer: Wallet,
+  verifyingContract: string
 ): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
   const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_BATCH_TYPE, permit)
