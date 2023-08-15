@@ -1,28 +1,25 @@
 import { UniversalRouter, Permit2, IWETH9 } from '../../../typechain'
-import {
-  V2_INIT_CODE_HASH,
-  V3_INIT_CODE_HASH,
-} from './constants'
-import {deployContract, deployContractWithArtifact, getWallets} from "./zkSyncUtils";
+import { V2_INIT_CODE_HASH, V3_INIT_CODE_HASH } from './constants'
+import { deployContract, deployContractWithArtifact, getWallets } from './zkSyncUtils'
 import WETH9 from '../contracts/WETH9.json'
-import {ZkSyncArtifact} from "@matterlabs/hardhat-zksync-deploy/dist/types";
+import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types'
 import * as FACTORY_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Factory.sol/UniswapV2Factory.json'
 import * as PAIR_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Pair.sol/UniswapV2Pair.json'
 import * as FACTORY_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
 import * as POOL_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
 import * as NFT_MANAGER_ARTIFACT from '@uniswap/v3-periphery/artifacts-zk/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
-import {ContractFactory} from 'zksync-web3'
-import {Contract} from "@ethersproject/contracts";
-import {ethers} from "ethers";
+import { ContractFactory } from 'zksync-web3'
+import { Contract } from '@ethersproject/contracts'
+import { ethers } from 'ethers'
 
 export async function deployRouter(
-    permit2: Permit2,
-    mockLooksRareRewardsDistributor?: string,
-    mockLooksRareToken?: string,
-    mockReentrantProtocol?: string,
-    weth9?: string,
-    v2Factory?: string,
-    v3Factory?: string
+  permit2: Permit2,
+  mockLooksRareRewardsDistributor?: string,
+  mockLooksRareToken?: string,
+  mockReentrantProtocol?: string,
+  weth9?: string,
+  v2Factory?: string,
+  v3Factory?: string
 ): Promise<UniversalRouter> {
   const unsupportedProtocol = await deployContract('UnsupportedProtocol', [])
   const routerParameters = {

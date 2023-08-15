@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers'
 import hre from 'hardhat'
 import PERMIT2_COMPILE from '../../../../artifacts-zk/permit2/src/Permit2.sol/Permit2.json'
 import { Permit2 } from '../../../../typechain'
-import {Wallet} from "zksync-web3";
+import { Wallet } from 'zksync-web3'
 
 const { ethers } = hre
 
@@ -72,33 +72,21 @@ export function getEip712Domain(chainId: number, verifyingContract: string) {
   }
 }
 
-export async function signPermit(
-    permit: PermitSingle,
-    signer: Wallet,
-    verifyingContract: string
-): Promise<string> {
+export async function signPermit(permit: PermitSingle, signer: Wallet, verifyingContract: string): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
   const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_TYPE, permit)
 
   return signature
 }
 
-export async function getPermitSignature(
-    permit: PermitSingle,
-    signer: Wallet,
-    permit2: Permit2
-): Promise<string> {
+export async function getPermitSignature(permit: PermitSingle, signer: Wallet, permit2: Permit2): Promise<string> {
   // look up the correct nonce for this permit
   const nextNonce = (await permit2.allowance(signer.address, permit.details.token, permit.spender)).nonce
   permit.details.nonce = nextNonce
   return await signPermit(permit, signer, permit2.address)
 }
 
-export async function getPermitBatchSignature(
-    permit: PermitBatch,
-    signer: Wallet,
-    permit2: Permit2
-): Promise<string> {
+export async function getPermitBatchSignature(permit: PermitBatch, signer: Wallet, permit2: Permit2): Promise<string> {
   for (const i in permit.details) {
     const nextNonce = (await permit2.allowance(signer.address, permit.details[i].token, permit.spender)).nonce
     permit.details[i].nonce = nextNonce
@@ -107,11 +95,7 @@ export async function getPermitBatchSignature(
   return await signPermitBatch(permit, signer, permit2.address)
 }
 
-export async function signPermitBatch(
-    permit: PermitBatch,
-    signer: Wallet,
-    verifyingContract: string
-): Promise<string> {
+export async function signPermitBatch(permit: PermitBatch, signer: Wallet, verifyingContract: string): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
   const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_BATCH_TYPE, permit)
 

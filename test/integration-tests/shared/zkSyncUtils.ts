@@ -1,7 +1,8 @@
 import { Provider, Contract, Wallet } from 'zksync-web3'
 import { Deployer } from '@matterlabs/hardhat-zksync-deploy'
 import * as hre from 'hardhat'
-import {ZkSyncArtifact} from "@matterlabs/hardhat-zksync-deploy/dist/types";
+import { ZkSyncArtifact } from '@matterlabs/hardhat-zksync-deploy/dist/types'
+import { HttpNetworkConfig } from 'hardhat/types'
 
 const RICH_WALLETS = [
   {
@@ -22,7 +23,7 @@ const RICH_WALLETS = [
   },
 ]
 
-export const provider = new Provider((hre.network.config as any).url)
+export const provider = new Provider((hre.network.config as HttpNetworkConfig).url)
 
 const wallet = new Wallet(RICH_WALLETS[0].privateKey, provider)
 const deployer = new Deployer(hre, wallet)
@@ -39,17 +40,14 @@ export async function loadArtifact(name: string) {
   return await deployer.loadArtifact(name)
 }
 
-export async function deployContract(
-    name: string,
-    constructorArguments?: any[] | undefined
-): Promise<Contract> {
+export async function deployContract(name: string, constructorArguments?: any[] | undefined): Promise<Contract> {
   const artifact = await loadArtifact(name)
   return await deployContractWithArtifact(artifact, constructorArguments)
 }
 
 export async function deployContractWithArtifact(
-    artifact: ZkSyncArtifact,
-    constructorArguments?: any[] | undefined
+  artifact: ZkSyncArtifact,
+  constructorArguments?: any[] | undefined
 ): Promise<Contract> {
   return await deployer.deploy(artifact, constructorArguments)
 }

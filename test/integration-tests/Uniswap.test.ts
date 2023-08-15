@@ -1,11 +1,11 @@
 import type { Contract } from '@ethersproject/contracts'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import {FeeAmount, TICK_SPACINGS} from '@uniswap/v3-sdk'
+import { FeeAmount, TICK_SPACINGS } from '@uniswap/v3-sdk'
 import { parseEvents, V2_EVENTS, V3_EVENTS } from './shared/parseEvents'
 import { expect } from './shared/expect'
 import { encodePath } from './shared/swapRouter02Helpers'
 import { BigNumber, BigNumberish } from 'ethers'
-import { Permit2, UniversalRouter} from '../../typechain'
+import { Permit2, UniversalRouter } from '../../typechain'
 import {
   ADDRESS_THIS,
   CONTRACT_BALANCE,
@@ -24,7 +24,7 @@ import deployUniversalRouter, {
   deployPermit2,
   deployV2Factory,
   deployV3Factory,
-  deployWeth
+  deployWeth,
 } from './shared/deployUniversalRouter'
 import { RoutePlanner, CommandType } from './shared/planner'
 import hre from 'hardhat'
@@ -32,10 +32,10 @@ import { getPermitSignature, getPermitBatchSignature, PermitSingle } from './sha
 const { ethers } = hre
 import * as PAIR_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Pair.sol/UniswapV2Pair.json'
 import * as POOL_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
-import {deployContract, getWallets} from "./shared/zkSyncUtils";
-import {encodePriceSqrt} from "./shared/encodePriceSqrt";
-import {Wallet} from "zksync-web3";
-import {abi as safeCastAbi} from '../../artifacts-zk/permit2/src/libraries/SafeCast160.sol/SafeCast160.json'
+import { deployContract, getWallets, provider } from './shared/zkSyncUtils'
+import { encodePriceSqrt } from './shared/encodePriceSqrt'
+import { Wallet } from 'zksync-web3'
+import { abi as safeCastAbi } from '../../artifacts-zk/permit2/src/libraries/SafeCast160.sol/SafeCast160.json'
 
 describe('Uniswap V2 and V3 Tests:', () => {
   let alice: Wallet
@@ -54,7 +54,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
     bob = getWallets()[1]
     daiContract = await deployContract('MintableERC20', [18, BigNumber.from(10).pow(30)])
     wethContract = await deployWeth()
-    await wethContract.deposit({value: ethers.utils.parseEther("100000")})
+    await wethContract.deposit({ value: ethers.utils.parseEther('100000') })
     usdcContract = await deployContract('MintableERC20', [6, BigNumber.from(10).pow(30)])
     usdtContract = await deployContract('MintableERC20', [6, BigNumber.from(10).pow(30)])
     permit2 = (await deployPermit2()).connect(bob) as Permit2
@@ -63,19 +63,82 @@ describe('Uniswap V2 and V3 Tests:', () => {
     const v3Factory = await deployV3Factory()
     const nftManager = await deployNftManager(v3Factory.address, wethContract.address)
 
-    await createPairAndMintUniswapV2(v2Factory, daiContract, wethContract, BigNumber.from('8140529658966941313012915'), BigNumber.from('4430761666523311112725'))
-    await createPairAndMintUniswapV2(v2Factory, daiContract, usdcContract, BigNumber.from('60144550130643463746539502'), BigNumber.from('60116888330202'))
-    await createPairAndMintUniswapV2(v2Factory, wethContract, usdcContract, BigNumber.from('33787846973815924916236'), BigNumber.from('62122035788372'))
+    await createPairAndMintUniswapV2(
+      v2Factory,
+      daiContract,
+      wethContract,
+      BigNumber.from('8140529658966941313012915'),
+      BigNumber.from('4430761666523311112725')
+    )
+    await createPairAndMintUniswapV2(
+      v2Factory,
+      daiContract,
+      usdcContract,
+      BigNumber.from('60144550130643463746539502'),
+      BigNumber.from('60116888330202')
+    )
+    await createPairAndMintUniswapV2(
+      v2Factory,
+      wethContract,
+      usdcContract,
+      BigNumber.from('33787846973815924916236'),
+      BigNumber.from('62122035788372')
+    )
 
-    await createPairAndMintUniswapV2(v2Factory, daiContract, usdtContract, BigNumber.from('3412637957762525698494106'), BigNumber.from('3408522124913'))
-    await createPairAndMintUniswapV2(v2Factory, wethContract, usdtContract, BigNumber.from('9542318191272319666383'), BigNumber.from('17559860761679'))
+    await createPairAndMintUniswapV2(
+      v2Factory,
+      daiContract,
+      usdtContract,
+      BigNumber.from('3412637957762525698494106'),
+      BigNumber.from('3408522124913')
+    )
+    await createPairAndMintUniswapV2(
+      v2Factory,
+      wethContract,
+      usdtContract,
+      BigNumber.from('9542318191272319666383'),
+      BigNumber.from('17559860761679')
+    )
 
+    await createPoolAndMintUniswapV3(
+      v3Factory,
+      nftManager,
+      daiContract,
+      wethContract,
+      FeeAmount.MEDIUM,
+      BigNumber.from('8140529658966941313012915'),
+      BigNumber.from('4430761666523311112725')
+    )
+    await createPoolAndMintUniswapV3(
+      v3Factory,
+      nftManager,
+      daiContract,
+      usdcContract,
+      FeeAmount.MEDIUM,
+      BigNumber.from('60144550130643463746539502'),
+      BigNumber.from('60116888330202')
+    )
+    await createPoolAndMintUniswapV3(
+      v3Factory,
+      nftManager,
+      wethContract,
+      usdcContract,
+      FeeAmount.MEDIUM,
+      BigNumber.from('33787846973815924916236'),
+      BigNumber.from('62122035788372')
+    )
 
-    await createPoolAndMintUniswapV3(v3Factory, nftManager, daiContract, wethContract, FeeAmount.MEDIUM, BigNumber.from('8140529658966941313012915'), BigNumber.from('4430761666523311112725'))
-    await createPoolAndMintUniswapV3(v3Factory, nftManager, daiContract, usdcContract, FeeAmount.MEDIUM, BigNumber.from('60144550130643463746539502'), BigNumber.from('60116888330202'))
-    await createPoolAndMintUniswapV3(v3Factory, nftManager, wethContract, usdcContract, FeeAmount.MEDIUM, BigNumber.from('33787846973815924916236'), BigNumber.from('62122035788372'))
-
-    router = (await deployUniversalRouter(permit2, undefined, undefined, undefined, wethContract.address, v2Factory.address, v3Factory.address)).connect(bob) as UniversalRouter
+    router = (
+      await deployUniversalRouter(
+        permit2,
+        undefined,
+        undefined,
+        undefined,
+        wethContract.address,
+        v2Factory.address,
+        v3Factory.address
+      )
+    ).connect(bob) as UniversalRouter
     planner = new RoutePlanner()
 
     // alice gives bob some tokens
@@ -181,7 +244,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
         ])
 
         const iface = new ethers.utils.Interface(safeCastAbi)
-        await expect(executeRouter(planner)).to.be.revertedWithCustomError({interface: iface}, 'UnsafeCast')
+        await expect(executeRouter(planner)).to.be.revertedWithCustomError({ interface: iface }, 'UnsafeCast')
       })
 
       it('V3 exactIn, permiting the exact amount', async () => {
@@ -437,7 +500,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
         planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, 0])
 
         const { ethBalanceBefore, ethBalanceAfter, daiBalanceBefore, daiBalanceAfter, v2SwapEventArgs, gasSpent } =
-            await executeRouter(planner, value)
+          await executeRouter(planner, value)
         const { amount0Out: daiTraded, amount1In: wethTraded } = v2SwapEventArgs!
         expect(daiBalanceAfter.sub(daiBalanceBefore)).gt(amountOut) // rounding
         expect(daiBalanceAfter.sub(daiBalanceBefore)).eq(daiTraded)
@@ -458,12 +521,12 @@ describe('Uniswap V2 and V3 Tests:', () => {
     })
 
     const addV3ExactInTrades = (
-        planner: RoutePlanner,
-        numTrades: BigNumberish,
-        amountOutMin: BigNumberish,
-        recipient?: string,
-        tokens: string[] = [daiContract.address, wethContract.address],
-        tokenSource: boolean = SOURCE_MSG_SENDER
+      planner: RoutePlanner,
+      numTrades: BigNumberish,
+      amountOutMin: BigNumberish,
+      recipient?: string,
+      tokens: string[] = [daiContract.address, wethContract.address],
+      tokenSource: boolean = SOURCE_MSG_SENDER
     ) => {
       const path = encodePathExactInput(tokens)
       for (let i = 0; i < numTrades; i++) {
@@ -491,12 +554,12 @@ describe('Uniswap V2 and V3 Tests:', () => {
       it('completes a V3 exactIn swap with longer path', async () => {
         const amountOutMin: number = 3 * 10 ** 6
         addV3ExactInTrades(
-            planner,
-            1,
-            amountOutMin,
-            MSG_SENDER,
-            [daiContract.address, wethContract.address, usdcContract.address],
-            SOURCE_MSG_SENDER
+          planner,
+          1,
+          amountOutMin,
+          MSG_SENDER,
+          [daiContract.address, wethContract.address, usdcContract.address],
+          SOURCE_MSG_SENDER
         )
 
         const {
@@ -585,8 +648,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
         addV3ExactInTrades(planner, 1, amountOutMin, MSG_SENDER, tokens, SOURCE_ROUTER)
 
         const { ethBalanceBefore, ethBalanceAfter, daiBalanceBefore, daiBalanceAfter, gasSpent } = await executeRouter(
-            planner,
-            amountIn
+          planner,
+          amountIn
         )
 
         expect(ethBalanceBefore.sub(ethBalanceAfter)).to.eq(amountIn.add(gasSpent))
@@ -602,7 +665,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
         planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, 0])
 
         const { ethBalanceBefore, ethBalanceAfter, daiBalanceBefore, daiBalanceAfter, gasSpent, v3SwapEventArgs } =
-            await executeRouter(planner, amountInMax)
+          await executeRouter(planner, amountInMax)
         const { amount0: daiTraded, amount1: wethTraded } = v3SwapEventArgs!
 
         expect(daiBalanceBefore.sub(daiBalanceAfter)).to.eq(daiTraded)
@@ -680,8 +743,16 @@ describe('Uniswap V2 and V3 Tests:', () => {
           const minAmountOut2 = expandTo18DecimalsBN(0.0075)
 
           // 1) transfer funds into DAI-USDC and DAI-USDT pairs to trade
-          planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [daiContract.address, await v2Factory.getPair(daiContract.address, usdcContract.address), v2AmountIn1])
-          planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [daiContract.address, await v2Factory.getPair(daiContract.address, usdtContract.address), v2AmountIn2])
+          planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
+            daiContract.address,
+            await v2Factory.getPair(daiContract.address, usdcContract.address),
+            v2AmountIn1,
+          ])
+          planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
+            daiContract.address,
+            await v2Factory.getPair(daiContract.address, usdtContract.address),
+            v2AmountIn2,
+          ])
 
           // 2) trade route1 and return tokens to bob
           planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [MSG_SENDER, 0, minAmountOut1, route1, SOURCE_MSG_SENDER])
@@ -929,8 +1000,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
           planner.addCommand(CommandType.SWEEP, [usdcContract.address, MSG_SENDER, 0.0005 * 10 ** 6])
 
           const { usdcBalanceBefore, usdcBalanceAfter, v2SwapEventArgs, v3SwapEventArgs } = await executeRouter(
-              planner,
-              value
+            planner,
+            value
           )
           const { amount0Out: usdcOutV2 } = v2SwapEventArgs!
           let { amount0: usdcOutV3 } = v3SwapEventArgs!
@@ -955,7 +1026,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
           planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, expandTo18DecimalsBN(0.0005)])
 
           const { ethBalanceBefore, ethBalanceAfter, gasSpent, v2SwapEventArgs, v3SwapEventArgs } = await executeRouter(
-              planner
+            planner
           )
           const { amount1Out: wethOutV2 } = v2SwapEventArgs!
           let { amount1: wethOutV3 } = v3SwapEventArgs!
@@ -1034,7 +1105,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
     const { commands, inputs } = planner
 
     const receipt = await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait()
-    const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+    const gasSpent = receipt.gasUsed.mul(await provider.getGasPrice())
+    //const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice);
     const v2SwapEventArgs = parseEvents(V2_EVENTS, receipt)[0]?.args as unknown as V2SwapEventArgs
     const v3SwapEventArgs = parseEvents(V3_EVENTS, receipt)[0]?.args as unknown as V3SwapEventArgs
 
@@ -1067,7 +1139,13 @@ describe('Uniswap V2 and V3 Tests:', () => {
     return encodePath(tokens.slice().reverse(), new Array(tokens.length - 1).fill(FeeAmount.MEDIUM))
   }
 
-  async function createPairAndMintUniswapV2(v2Factory: Contract, token0: Contract, token1: Contract, amount0: BigNumber, amount1: BigNumber) {
+  async function createPairAndMintUniswapV2(
+    v2Factory: Contract,
+    token0: Contract,
+    token1: Contract,
+    amount0: BigNumber,
+    amount1: BigNumber
+  ) {
     await v2Factory.createPair(token0.address, token1.address)
     const pairAddress = await v2Factory.getPair(token0.address, token1.address)
     const pair = new ethers.Contract(pairAddress, PAIR_V2_ARTIFACT.abi, getWallets()[0])
@@ -1076,20 +1154,33 @@ describe('Uniswap V2 and V3 Tests:', () => {
     await pair.mint(getWallets()[0].address)
   }
 
-  async function createPoolAndMintUniswapV3(v3Factory: Contract, nftManager: Contract, token0: Contract, token1: Contract, fee: FeeAmount, amount0: BigNumber, amount1: BigNumber) {
+  async function createPoolAndMintUniswapV3(
+    v3Factory: Contract,
+    nftManager: Contract,
+    token0: Contract,
+    token1: Contract,
+    fee: FeeAmount,
+    amount0: BigNumber,
+    amount1: BigNumber
+  ) {
     if (token0.address.toLowerCase() > token1.address.toLowerCase()) {
-      [token0, token1] = [token1, token0];
-      [amount0, amount1] = [amount1, amount0];
+      ;[token0, token1] = [token1, token0]
+      ;[amount0, amount1] = [amount1, amount0]
     }
-    await nftManager.createAndInitializePoolIfNecessary(token0.address, token1.address, fee, encodePriceSqrt(amount1, amount0))
+    await nftManager.createAndInitializePoolIfNecessary(
+      token0.address,
+      token1.address,
+      fee,
+      encodePriceSqrt(amount1, amount0)
+    )
 
     const poolAddress = await v3Factory.getPool(token0.address, token1.address, fee)
     const pool = new ethers.Contract(poolAddress, POOL_ARTIFACT.abi, getWallets()[0])
 
     let tick = (await pool.slot0()).tick
 
-    const tickLower = (Math.floor(tick/TICK_SPACINGS[fee]) - 1) * TICK_SPACINGS[fee]
-    const tickUpper = (Math.floor(tick/TICK_SPACINGS[fee]) + 2) * TICK_SPACINGS[fee]
+    const tickLower = (Math.floor(tick / TICK_SPACINGS[fee]) - 1) * TICK_SPACINGS[fee]
+    const tickUpper = (Math.floor(tick / TICK_SPACINGS[fee]) + 2) * TICK_SPACINGS[fee]
 
     const liquidityParams = {
       token0: token0.address,
