@@ -1,94 +1,100 @@
-import hre from 'hardhat'
-// const { ethers } = hre
-import { Permit2, UniversalRouter } from '../../../typechain'
-import { Wallet, Provider } from 'zksync-web3'
-import { Deployer } from '@matterlabs/hardhat-zksync-deploy'
-
-import { ALICE_PRIVATE_KEY, ZERO_ADDRESS, V2_INIT_CODE_HASH_MAINNET, V3_INIT_CODE_HASH_MAINNET } from './constants'
+import { UniversalRouter, Permit2, IWETH9 } from '../../../typechain'
+import {
+  V2_INIT_CODE_HASH,
+  V3_INIT_CODE_HASH,
+} from './constants'
+import {deployContract, deployContractWithArtifact, getWallets} from "./zkSyncUtils";
+import WETH9 from '../contracts/WETH9.json'
+import {ZkSyncArtifact} from "@matterlabs/hardhat-zksync-deploy/dist/types";
+import * as FACTORY_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Factory.sol/UniswapV2Factory.json'
+import * as PAIR_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Pair.sol/UniswapV2Pair.json'
+import * as FACTORY_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
+import * as POOL_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
+import * as NFT_MANAGER_ARTIFACT from '@uniswap/v3-periphery/artifacts-zk/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
+import {ContractFactory} from 'zksync-web3'
+import {Contract} from "@ethersproject/contracts";
+import {ethers} from "ethers";
 
 export async function deployRouter(
-  permit2: Permit2,
-  weth9Address?: string,
-  seaportAddress?: string,
-  nftxZapAddress?: string,
-  x2y2Address?: string,
-  foundationAddress?: string,
-  sudoswapAddress?: string,
-  nft20ZapAddress?: string,
-  cryptopunksAddress?: string,
-  looksRareAddress?: string,
-  routerRewardsDistributorAddress?: string,
-  looksRareRewardsDistributorAddress?: string,
-  looksRareTokenAddress?: string,
-  v2FactoryAddress?: string,
-  v3FactoryAddress?: string,
-  mockLooksRareRewardsDistributor?: string,
-  mockLooksRareToken?: string
+    permit2: Permit2,
+    mockLooksRareRewardsDistributor?: string,
+    mockLooksRareToken?: string,
+    mockReentrantProtocol?: string,
+    weth9?: string,
+    v2Factory?: string,
+    v3Factory?: string
 ): Promise<UniversalRouter> {
-  mockLooksRareRewardsDistributor
-  mockLooksRareToken
+  const unsupportedProtocol = await deployContract('UnsupportedProtocol', [])
   const routerParameters = {
-    permit2: permit2.address || ZERO_ADDRESS,
-    weth9: weth9Address || ZERO_ADDRESS,
-    seaport: seaportAddress || ZERO_ADDRESS,
-    nftxZap: nftxZapAddress || ZERO_ADDRESS,
-    x2y2: x2y2Address || ZERO_ADDRESS,
-    foundation: foundationAddress || ZERO_ADDRESS,
-    sudoswap: sudoswapAddress || ZERO_ADDRESS,
-    nft20Zap: nft20ZapAddress || ZERO_ADDRESS,
-    cryptopunks: cryptopunksAddress || ZERO_ADDRESS,
-    looksRare: looksRareAddress || ZERO_ADDRESS,
-    routerRewardsDistributor: routerRewardsDistributorAddress || ZERO_ADDRESS,
-    looksRareRewardsDistributor: looksRareRewardsDistributorAddress || ZERO_ADDRESS,
-    looksRareToken: looksRareTokenAddress || ZERO_ADDRESS,
-    v2Factory: v2FactoryAddress || ZERO_ADDRESS,
-    v3Factory: v3FactoryAddress || ZERO_ADDRESS,
-    pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,
-    poolInitCodeHash: V3_INIT_CODE_HASH_MAINNET,
+    permit2: permit2.address,
+    weth9: weth9 ?? unsupportedProtocol.address,
+    seaport: unsupportedProtocol.address,
+    nftxZap: mockReentrantProtocol ?? unsupportedProtocol.address,
+    x2y2: unsupportedProtocol.address,
+    foundation: unsupportedProtocol.address,
+    sudoswap: unsupportedProtocol.address,
+    nft20Zap: unsupportedProtocol.address,
+    cryptopunks: unsupportedProtocol.address,
+    looksRare: unsupportedProtocol.address,
+    routerRewardsDistributor: unsupportedProtocol.address,
+    looksRareRewardsDistributor: mockLooksRareRewardsDistributor ?? unsupportedProtocol.address,
+    looksRareToken: mockLooksRareToken ?? unsupportedProtocol.address,
+    v2Factory: v2Factory ?? unsupportedProtocol.address,
+    v3Factory: v3Factory ?? unsupportedProtocol.address,
+    pairInitCodeHash: V2_INIT_CODE_HASH,
+    poolInitCodeHash: V3_INIT_CODE_HASH,
   }
 
-  // Initialize the wallet.
-  const provider = Provider.getDefaultProvider()
-  const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
-
-  // Create deployer object and load the artifact of the contract you want to deploy.
-  const deployer = new Deployer(hre, wallet)
-  const artifact = await deployer.loadArtifact('UniversalRouter')
-
-  const router = (await deployer.deploy(artifact, [routerParameters])) as unknown as UniversalRouter
+  const router = (await deployContract('UniversalRouter', [routerParameters])) as unknown as UniversalRouter
   return router
 }
 
 export default deployRouter
 
-export async function deployMockPermit2(): Promise<Permit2> {
-  console.log(`Running deploy script for the Permit2 contract`)
-
-  // Initialize the wallet.
-  const provider = Provider.getDefaultProvider()
-  const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
-
-  // Create deployer object and load the artifact of the contract you want to deploy.
-  const deployer = new Deployer(hre, wallet)
-  const artifact = await deployer.loadArtifact('MockPermit2')
-
-  const permit2 = (await deployer.deploy(artifact, [])) as unknown as Permit2
-
+export async function deployPermit2(): Promise<Permit2> {
+  const permit2 = (await deployContract('Permit2')) as unknown as Permit2
   return permit2
 }
 
-export async function deployPermit2(): Promise<Permit2> {
-  // Initialize the wallet.
-  const provider = Provider.getDefaultProvider()
-  const wallet = new Wallet(ALICE_PRIVATE_KEY, provider)
+export async function deployWeth(): Promise<IWETH9> {
+  const weth9 = (await deployContractWithArtifact(WETH9 as ZkSyncArtifact)) as IWETH9
+  return weth9
+}
 
-  // Create deployer object and load the artifact of the contract you want to deploy.
-  const deployer = new Deployer(hre, wallet)
-  const artifact = await deployer.loadArtifact('Permit2')
+export async function deployV2Factory(): Promise<Contract> {
+  const contractFactory = new ContractFactory(FACTORY_V2_ARTIFACT.abi, FACTORY_V2_ARTIFACT.bytecode, getWallets()[0])
 
-  const permit2 = (await deployer.deploy(artifact, [])) as unknown as Permit2
+  const factoryDeps = [PAIR_V2_ARTIFACT.bytecode]
+  const factory = await contractFactory.deploy(ethers.constants.AddressZero, {
+    customData: {
+      factoryDeps,
+    },
+  })
 
-  return permit2
+  return factory
+}
+
+export async function deployV3Factory(): Promise<Contract> {
+  const contractFactory = new ContractFactory(FACTORY_ARTIFACT.abi, FACTORY_ARTIFACT.bytecode, getWallets()[0])
+
+  let factoryDeps: string[] = [POOL_ARTIFACT.bytecode]
+  const factory = await contractFactory.deploy({
+    customData: {
+      factoryDeps,
+    },
+  })
+
+  return factory
+}
+
+export async function deployNftManager(v3Factory: string, weth9: string): Promise<Contract> {
+  const nftManager = await deployContractWithArtifact(NFT_MANAGER_ARTIFACT as ZkSyncArtifact, [
+    v3Factory,
+    weth9,
+    // Isn't needed for the tests
+    ethers.constants.AddressZero,
+  ])
+  return nftManager
 }
 
 export async function deployRouterAndPermit2(
@@ -96,12 +102,6 @@ export async function deployRouterAndPermit2(
   mockLooksRareToken?: string
 ): Promise<[UniversalRouter, Permit2]> {
   const permit2 = await deployPermit2()
-  const router = await deployRouter(
-    permit2,
-    ZERO_ADDRESS,
-    ZERO_ADDRESS,
-    mockLooksRareRewardsDistributor,
-    mockLooksRareToken
-  )
+  const router = await deployRouter(permit2, mockLooksRareRewardsDistributor, mockLooksRareToken)
   return [router, permit2]
 }
