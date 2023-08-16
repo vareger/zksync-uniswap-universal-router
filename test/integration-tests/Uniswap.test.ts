@@ -18,7 +18,7 @@ import {
   SOURCE_MSG_SENDER,
   SOURCE_ROUTER,
 } from './shared/constants'
-import { expandTo18DecimalsBN } from './shared/helpers'
+import { expandTo18DecimalsBN, isTokenOrderCorrect } from './shared/helpers'
 import deployUniversalRouter, {
   deployNftManager,
   deployPermit2,
@@ -32,7 +32,7 @@ import { getPermitSignature, getPermitBatchSignature, PermitSingle } from './sha
 const { ethers } = hre
 import * as PAIR_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Pair.sol/UniswapV2Pair.json'
 import * as POOL_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
-import { deployContract, getWallets, provider } from './shared/zkSyncUtils'
+import { deployContract, getWallets } from './shared/zkSyncUtils'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { Wallet } from 'zksync-web3'
 import { abi as safeCastAbi } from '../../artifacts-zk/permit2/src/libraries/SafeCast160.sol/SafeCast160.json'
@@ -63,6 +63,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
     const v3Factory = await deployV3Factory()
     const nftManager = await deployNftManager(v3Factory.address, wethContract.address)
 
+    // v2 liquidity amounts from the original tests
     await createPairAndMintUniswapV2(
       v2Factory,
       daiContract,
@@ -100,6 +101,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
       BigNumber.from('17559860761679')
     )
 
+    // v3 liquidity amounts the same as for v2 in the small ticks range
     await createPoolAndMintUniswapV3(
       v3Factory,
       nftManager,
@@ -412,7 +414,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
         planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, 0])
 
         const { gasSpent, ethBalanceBefore, ethBalanceAfter, v2SwapEventArgs } = await executeRouter(planner)
-        const { amount1Out: wethTraded } = v2SwapEventArgs!
+        const { amount0Out, amount1Out } = v2SwapEventArgs!
+        const wethTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount1Out : amount0Out
 
         expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(wethTraded.sub(gasSpent))
       })
@@ -430,7 +433,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
         planner.addCommand(CommandType.SWEEP, [daiContract.address, MSG_SENDER, 0])
 
         const { gasSpent, ethBalanceBefore, ethBalanceAfter, v2SwapEventArgs } = await executeRouter(planner)
-        const { amount1Out: wethTraded } = v2SwapEventArgs!
+        const { amount0Out, amount1Out } = v2SwapEventArgs!
+        const wethTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount1Out : amount0Out
         expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(amountOut.sub(gasSpent))
         expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(wethTraded.sub(gasSpent))
       })
@@ -479,7 +483,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
         ])
 
         const { daiBalanceBefore, daiBalanceAfter, v2SwapEventArgs } = await executeRouter(planner, amountIn)
-        const { amount0Out: daiTraded } = v2SwapEventArgs!
+        const { amount0Out, amount1Out } = v2SwapEventArgs!
+        const daiTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount0Out : amount1Out
 
         expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.gt(minAmountOut)
         expect(daiBalanceAfter.sub(daiBalanceBefore)).to.equal(daiTraded)
@@ -501,7 +506,9 @@ describe('Uniswap V2 and V3 Tests:', () => {
 
         const { ethBalanceBefore, ethBalanceAfter, daiBalanceBefore, daiBalanceAfter, v2SwapEventArgs, gasSpent } =
           await executeRouter(planner, value)
-        const { amount0Out: daiTraded, amount1In: wethTraded } = v2SwapEventArgs!
+        const { amount0Out, amount1Out, amount0In, amount1In } = v2SwapEventArgs!
+        const daiTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount0Out : amount1Out
+        const wethTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount1In : amount0In
         expect(daiBalanceAfter.sub(daiBalanceBefore)).gt(amountOut) // rounding
         expect(daiBalanceAfter.sub(daiBalanceBefore)).eq(daiTraded)
         expect(ethBalanceBefore.sub(ethBalanceAfter)).to.eq(wethTraded.add(gasSpent))
@@ -546,7 +553,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
         addV3ExactInTrades(planner, 1, amountOutMin)
 
         const { wethBalanceBefore, wethBalanceAfter, v3SwapEventArgs } = await executeRouter(planner)
-        const { amount1: wethTraded } = v3SwapEventArgs!
+        const { amount0, amount1 } = v3SwapEventArgs!
+        const wethTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount1 : amount0
         expect(wethBalanceAfter.sub(wethBalanceBefore)).to.be.gte(amountOutMin)
         expect(wethBalanceAfter.sub(wethBalanceBefore)).to.eq(wethTraded.mul(-1))
       })
@@ -584,7 +592,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
         planner.addCommand(CommandType.V3_SWAP_EXACT_OUT, [MSG_SENDER, amountOut, amountInMax, path, SOURCE_MSG_SENDER])
 
         const { wethBalanceBefore, wethBalanceAfter, v3SwapEventArgs } = await executeRouter(planner)
-        const { amount0: daiTraded } = v3SwapEventArgs!
+        const { amount0, amount1 } = v3SwapEventArgs!
+        const daiTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount0 : amount1
         expect(wethBalanceAfter.sub(wethBalanceBefore)).to.eq(amountOut)
         expect(daiTraded).to.be.lt(amountInMax)
       })
@@ -613,7 +622,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
         planner.addCommand(CommandType.UNWRAP_WETH, [MSG_SENDER, 0])
 
         const { ethBalanceBefore, ethBalanceAfter, v3SwapEventArgs, gasSpent } = await executeRouter(planner)
-        const { amount1: wethTraded } = v3SwapEventArgs!
+        const { amount0, amount1 } = v3SwapEventArgs!
+        const wethTraded = isTokenOrderCorrect(daiContract, wethContract) ? amount1 : amount0
 
         expect(ethBalanceAfter.sub(ethBalanceBefore)).to.be.gte(amountOutMin.sub(gasSpent))
         expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(wethTraded.mul(-1).sub(gasSpent))
@@ -666,7 +676,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
 
         const { ethBalanceBefore, ethBalanceAfter, daiBalanceBefore, daiBalanceAfter, gasSpent, v3SwapEventArgs } =
           await executeRouter(planner, amountInMax)
-        const { amount0: daiTraded, amount1: wethTraded } = v3SwapEventArgs!
+        const { amount0, amount1 } = v3SwapEventArgs!
+        const [daiTraded, wethTraded] = isTokenOrderCorrect(daiContract, wethContract) ? [amount0, amount1] : [amount1, amount0]
 
         expect(daiBalanceBefore.sub(daiBalanceAfter)).to.eq(daiTraded)
         expect(ethBalanceBefore.sub(ethBalanceAfter)).to.eq(wethTraded.add(gasSpent))
@@ -691,7 +702,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
           const v2AmountOutMin = expandTo18DecimalsBN(0.0005)
 
           planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-            await v2Factory.getPair(usdtContract.address, wethContract.address),
+            await v2Factory.getPair(usdcContract.address, wethContract.address),
             v3AmountIn,
             v3AmountOutMin,
             encodePathExactInput(v3Tokens),
@@ -701,7 +712,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
           planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [MSG_SENDER, 0, v2AmountOutMin, v2Tokens, SOURCE_MSG_SENDER])
 
           const { wethBalanceBefore, wethBalanceAfter, v2SwapEventArgs } = await executeRouter(planner)
-          const { amount1Out: wethTraded } = v2SwapEventArgs!
+          const { amount0Out, amount1Out } = v2SwapEventArgs!
+          const wethTraded = isTokenOrderCorrect(usdcContract, wethContract) ? amount1Out : amount0Out
           expect(wethBalanceAfter.sub(wethBalanceBefore)).to.eq(wethTraded)
         })
 
@@ -728,7 +740,8 @@ describe('Uniswap V2 and V3 Tests:', () => {
           ])
 
           const { wethBalanceBefore, wethBalanceAfter, v3SwapEventArgs } = await executeRouter(planner)
-          const { amount1: wethTraded } = v3SwapEventArgs!
+          const { amount0, amount1 } = v3SwapEventArgs!
+          const wethTraded = isTokenOrderCorrect(usdcContract, wethContract) ? amount1 : amount0
           expect(wethBalanceAfter.sub(wethBalanceBefore)).to.eq(wethTraded.mul(-1))
         })
       })
@@ -974,8 +987,10 @@ describe('Uniswap V2 and V3 Tests:', () => {
           planner.addCommand(CommandType.SWEEP, [wethContract.address, MSG_SENDER, minAmountOut])
 
           const { wethBalanceBefore, wethBalanceAfter, v2SwapEventArgs, v3SwapEventArgs } = await executeRouter(planner)
-          const { amount1Out: wethOutV2 } = v2SwapEventArgs!
-          let { amount1: wethOutV3 } = v3SwapEventArgs!
+          const { amount0Out, amount1Out } = v2SwapEventArgs!
+          const wethOutV2 = isTokenOrderCorrect(daiContract, wethContract) ? amount1Out : amount0Out
+          const { amount0, amount1 } = v3SwapEventArgs!
+          let wethOutV3 = isTokenOrderCorrect(daiContract, wethContract) ? amount1 : amount0
 
           // expect(daiBalanceBefore.sub(daiBalanceAfter)).to.eq(v2AmountIn.add(v3AmountIn)) // TODO: with permit2 can check from alice's balance
           expect(wethBalanceAfter.sub(wethBalanceBefore)).to.eq(wethOutV2.sub(wethOutV3))
@@ -1003,8 +1018,10 @@ describe('Uniswap V2 and V3 Tests:', () => {
             planner,
             value
           )
-          const { amount0Out: usdcOutV2 } = v2SwapEventArgs!
-          let { amount0: usdcOutV3 } = v3SwapEventArgs!
+          const { amount0Out, amount1Out } = v2SwapEventArgs!
+          const usdcOutV2 = isTokenOrderCorrect(usdcContract, wethContract) ? amount0Out : amount1Out
+          const { amount0, amount1 } = v3SwapEventArgs!
+          let usdcOutV3 = isTokenOrderCorrect(usdcContract, wethContract) ? amount0 : amount1
           usdcOutV3 = usdcOutV3.mul(-1)
           expect(usdcBalanceAfter.sub(usdcBalanceBefore)).to.eq(usdcOutV2.add(usdcOutV3))
         })
@@ -1028,8 +1045,10 @@ describe('Uniswap V2 and V3 Tests:', () => {
           const { ethBalanceBefore, ethBalanceAfter, gasSpent, v2SwapEventArgs, v3SwapEventArgs } = await executeRouter(
             planner
           )
-          const { amount1Out: wethOutV2 } = v2SwapEventArgs!
-          let { amount1: wethOutV3 } = v3SwapEventArgs!
+          const { amount0Out, amount1Out } = v2SwapEventArgs!
+          const wethOutV2 = isTokenOrderCorrect(daiContract, wethContract) ? amount1Out : amount0Out
+          const { amount0, amount1 } = v3SwapEventArgs!
+          let wethOutV3 = isTokenOrderCorrect(daiContract, wethContract) ? amount1 : amount0
           wethOutV3 = wethOutV3.mul(-1)
 
           expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(wethOutV2.add(wethOutV3).sub(gasSpent))
@@ -1105,8 +1124,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
     const { commands, inputs } = planner
 
     const receipt = await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait()
-    const gasSpent = receipt.gasUsed.mul(await provider.getGasPrice())
-    //const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice);
+    const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice)
     const v2SwapEventArgs = parseEvents(V2_EVENTS, receipt)[0]?.args as unknown as V2SwapEventArgs
     const v3SwapEventArgs = parseEvents(V3_EVENTS, receipt)[0]?.args as unknown as V3SwapEventArgs
 
