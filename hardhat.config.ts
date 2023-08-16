@@ -4,6 +4,7 @@ import '@nomiclabs/hardhat-waffle'
 import '@matterlabs/hardhat-zksync-deploy'
 import '@matterlabs/hardhat-zksync-solc'
 import '@matterlabs/hardhat-zksync-verify'
+import '@matterlabs/hardhat-zksync-chai-matchers'
 import { task } from 'hardhat/config'
 import deployZkSyncEra from './script/deploy_zksync_era'
 import dotenv from 'dotenv'
@@ -38,8 +39,8 @@ export default {
   },
   networks: {
     zkSyncLocalhost: {
-      url: 'http://localhost:3050',
-      ethNetwork: 'http://localhost:8545',
+      url: 'http://localhost:8011',
+      ethNetwork: '',
       zksync: true,
     },
     zkSyncTestnet: {
