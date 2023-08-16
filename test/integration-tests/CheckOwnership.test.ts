@@ -47,9 +47,9 @@ describe('Check Ownership', () => {
       ])
 
       const { commands, inputs } = planner
-      console.log(expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.revertedWithCustomError(
+      expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.revertedWithCustomError(
           router, 'ExecutionFailed'
-      ))
+      )
       await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.revertedWithCustomError(
           router, 'ExecutionFailed'
       )//TODO: .withArgs(0, "0x7dbe7e89")
