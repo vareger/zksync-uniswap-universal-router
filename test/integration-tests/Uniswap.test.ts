@@ -32,7 +32,7 @@ import { getPermitSignature, getPermitBatchSignature, PermitSingle } from './sha
 const { ethers } = hre
 import * as PAIR_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Pair.sol/UniswapV2Pair.json'
 import * as POOL_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
-import { deployContract, getWallets, provider } from './shared/zkSyncUtils'
+import { deployContract, getWallets } from './shared/zkSyncUtils'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { Wallet } from 'zksync-web3'
 import { abi as safeCastAbi } from '../../artifacts-zk/permit2/src/libraries/SafeCast160.sol/SafeCast160.json'
@@ -1105,8 +1105,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
     const { commands, inputs } = planner
 
     const receipt = await (await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })).wait()
-    const gasSpent = receipt.gasUsed.mul(await provider.getGasPrice())
-    //const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice);
+    const gasSpent = receipt.gasUsed.mul(receipt.effectiveGasPrice)
     const v2SwapEventArgs = parseEvents(V2_EVENTS, receipt)[0]?.args as unknown as V2SwapEventArgs
     const v3SwapEventArgs = parseEvents(V3_EVENTS, receipt)[0]?.args as unknown as V3SwapEventArgs
 
