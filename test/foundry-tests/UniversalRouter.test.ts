@@ -62,16 +62,9 @@ describe('UniversalRouter Test:', () => {
 
     const { commands, inputs } = planner
 
-    await (
-      await alice.transfer({
-        to: router.address,
-        amount: AMOUNT,
-      })
-    ).wait()
-
     expect(await provider.getBalance(RECIPIENT)).to.be.equal(0)
 
-    await (await router['execute(bytes,bytes[])'](commands, inputs)).wait()
+    await (await router['execute(bytes,bytes[])'](commands, inputs, { value: AMOUNT })).wait()
 
     expect(await provider.getBalance(RECIPIENT)).to.be.equal(AMOUNT)
   })
@@ -88,7 +81,7 @@ describe('UniversalRouter Test:', () => {
 
   it('testSweepERC1155NotFullAmount', async () => {
     let id: BigNumber = ethers.constants.Zero
-    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, RECIPIENT, id, expandTo18DecimalsBN(0.5)])
+    planner.addCommand(CommandType.SWEEP_ERC1155, [erc1155.address, RECIPIENT, id, AMOUNT.div(2)])
     const { commands, inputs } = planner
 
     await (await erc1155.connect(alice).mint(router.address, id, AMOUNT)).wait()
