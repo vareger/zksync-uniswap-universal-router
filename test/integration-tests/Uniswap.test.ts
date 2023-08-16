@@ -63,6 +63,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
     const v3Factory = await deployV3Factory()
     const nftManager = await deployNftManager(v3Factory.address, wethContract.address)
 
+    // v2 liquidity amounts from the original tests
     await createPairAndMintUniswapV2(
       v2Factory,
       daiContract,
@@ -100,6 +101,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
       BigNumber.from('17559860761679')
     )
 
+    // v3 liquidity amounts the same as for v2 in the small ticks range
     await createPoolAndMintUniswapV3(
       v3Factory,
       nftManager,
@@ -700,7 +702,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
           const v2AmountOutMin = expandTo18DecimalsBN(0.0005)
 
           planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-            await v2Factory.getPair(usdtContract.address, wethContract.address),
+            await v2Factory.getPair(usdcContract.address, wethContract.address),
             v3AmountIn,
             v3AmountOutMin,
             encodePathExactInput(v3Tokens),
