@@ -7,12 +7,12 @@ import '@matterlabs/hardhat-zksync-chai-matchers'
 import { task } from 'hardhat/config'
 import deployZkSyncEra from './script/deploy_zksync_era'
 import dotenv from 'dotenv'
-
 dotenv.config()
 
-//This variable is used by the hardhat-zksync-chai-matchers
 const ZK_SYNC_LOCALHOST = "http://localhost:8011"
+// This variable is used by the hardhat-zksync-chai-matchers
 process.env.ZKSYNC_WEB3_API_URL = ZK_SYNC_LOCALHOST
+
 task('deployZkSyncEra')
   .addParam('privateKey', 'Private key used to deploy')
   .addParam('params', 'Path to params json')
