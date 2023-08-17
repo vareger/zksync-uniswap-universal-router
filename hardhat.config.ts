@@ -30,9 +30,6 @@ const DEFAULT_COMPILER_SETTINGS = {
       enabled: true,
       runs: 1_000_000,
     },
-    metadata: {
-      bytecodeHash: 'none',
-    },
   },
 }
 
