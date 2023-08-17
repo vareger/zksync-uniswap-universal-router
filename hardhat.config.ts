@@ -39,7 +39,7 @@ export default {
   },
   networks: {
     zkSyncLocalhost: {
-      url: 'http://localhost:8011',
+      url: process.env.ZKSYNC_WEB3_API_URL,
       ethNetwork: '',
       zksync: true,
     },

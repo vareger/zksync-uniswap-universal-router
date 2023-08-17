@@ -677,7 +677,9 @@ describe('Uniswap V2 and V3 Tests:', () => {
         const { ethBalanceBefore, ethBalanceAfter, daiBalanceBefore, daiBalanceAfter, gasSpent, v3SwapEventArgs } =
           await executeRouter(planner, amountInMax)
         const { amount0, amount1 } = v3SwapEventArgs!
-        const [daiTraded, wethTraded] = isTokenOrderCorrect(daiContract, wethContract) ? [amount0, amount1] : [amount1, amount0]
+        const [daiTraded, wethTraded] = isTokenOrderCorrect(daiContract, wethContract)
+          ? [amount0, amount1]
+          : [amount1, amount0]
 
         expect(daiBalanceBefore.sub(daiBalanceAfter)).to.eq(daiTraded)
         expect(ethBalanceBefore.sub(ethBalanceAfter)).to.eq(wethTraded.add(gasSpent))

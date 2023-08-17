@@ -75,12 +75,9 @@ describe('UniversalRouter', () => {
       const commands = '0xff'
       const inputs: string[] = ['0x12341234']
 
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.revertedWithCustomError(
-        router,
-        'InvalidCommandType'
-      )
-      //Dima: need to add check for uint parameter
-      //.withArgs(31)
+      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE))
+        .to.be.revertedWithCustomError(router, 'InvalidCommandType')
+        .withArgs(31)
     })
 
     it('reverts for an invalid command at index 1', async () => {
@@ -96,12 +93,9 @@ describe('UniversalRouter', () => {
       commands = commands.concat(invalidCommand)
       inputs.push('0x21341234')
 
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.revertedWithCustomError(
-        router,
-        'InvalidCommandType'
-      )
-      //Dima: need to fix plugin error
-      //.withArgs(31)
+      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE))
+        .to.be.revertedWithCustomError(router, 'InvalidCommandType')
+        .withArgs(31)
     })
 
     it('reverts if paying a portion over 100% of contract balance', async () => {
@@ -140,12 +134,10 @@ describe('UniversalRouter', () => {
       planner.addCommand(CommandType.NFTX, [0, reentrantCalldata])
       ;({ commands, inputs } = planner)
 
-      //const notAllowedReenterSelector = '0xb418cb98'
-      //Dima: need add check for error parameter, like (router,"ExecutionFailed").withArgs(notAllowedReenterSelector) ??
-      await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(
-        router,
-        'ExecutionFailed'
-      )
+      const notAllowedReenterSelector = '0xb418cb98'
+      await expect(router['execute(bytes,bytes[])'](commands, inputs))
+        .to.be.revertedWithCustomError(router, 'ExecutionFailed')
+        .withArgs(0, notAllowedReenterSelector)
     })
   })
 
