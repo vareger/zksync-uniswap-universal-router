@@ -1,7 +1,7 @@
-import { UniversalRouter, Permit2, ERC20, MockLooksRareRewardsDistributor, MintableERC20 } from '../../typechain'
-import { BigNumber, BigNumberish } from 'ethers'
-import { expect } from './shared/expect'
-import { abi as ROUTER_ABI } from '../../artifacts-zk/contracts/UniversalRouter.sol/UniversalRouter.json'
+import { UniversalRouter, Permit2, ERC20, MockLooksRareRewardsDistributor } from '../typechain'
+import { BigNumberish, Contract } from 'ethers'
+import { expect } from 'chai'
+import { abi as ROUTER_ABI } from '../artifacts-zk/contracts/UniversalRouter.sol/UniversalRouter.json'
 import deployUniversalRouter, { deployPermit2, deployWeth } from './shared/deployUniversalRouter'
 import {
   DEADLINE,
@@ -16,15 +16,15 @@ import { expandTo18DecimalsBN } from './shared/helpers'
 import hre from 'hardhat'
 import { Wallet } from 'zksync-web3'
 import { deployContract, getWallets } from './shared/zkSyncUtils'
-import { Contract } from '@ethersproject/contracts'
 
 const { ethers } = hre
 const routerInterface = new ethers.utils.Interface(ROUTER_ABI)
+
 describe('UniversalRouter', () => {
   let alice: Wallet
   let router: UniversalRouter
   let permit2: Permit2
-  let daiContract: MintableERC20
+  let daiContract: ERC20
   let wethContract: Contract
   let mockLooksRareToken: ERC20
   let mockLooksRareRewardsDistributor: MockLooksRareRewardsDistributor
@@ -36,9 +36,8 @@ describe('UniversalRouter', () => {
       ROUTER_REWARDS_DISTRIBUTOR,
       mockLooksRareToken.address,
     ])) as MockLooksRareRewardsDistributor
-    daiContract = <MintableERC20>await deployContract('MintableERC20', [18, BigNumber.from(10).pow(30)])
+    daiContract = await deployContract('MintableERC20', [18, expandTo18DecimalsBN(3000000000)]) as ERC20
     wethContract = await deployWeth()
-    await wethContract.deposit({ value: ethers.utils.parseEther('100000') })
     permit2 = (await deployPermit2()).connect(alice) as Permit2
     router = (
       await deployUniversalRouter(permit2, mockLooksRareRewardsDistributor.address, mockLooksRareToken.address)
@@ -50,8 +49,8 @@ describe('UniversalRouter', () => {
 
     beforeEach(async () => {
       planner = new RoutePlanner()
-      await (await daiContract.connect(alice).approve(permit2.address, MAX_UINT)).wait()
-      await (await permit2.approve(daiContract.address, router.address, MAX_UINT160, DEADLINE)).wait()
+      await daiContract.approve(permit2.address, MAX_UINT)
+      await permit2.approve(daiContract.address, router.address, MAX_UINT160, DEADLINE)
     })
 
     it('reverts if block.timestamp exceeds the deadline', async () => {
@@ -138,6 +137,28 @@ describe('UniversalRouter', () => {
       await expect(router['execute(bytes,bytes[])'](commands, inputs))
         .to.be.revertedWithCustomError(router, 'ExecutionFailed')
         .withArgs(0, notAllowedReenterSelector)
+    })
+
+    describe('partial fills', async () => {
+      it('reverts if no commands are allowed to revert', async () => {
+        planner.addCommand(CommandType.SEAPORT, [0, '0x'])
+
+        const { commands, inputs } = planner
+
+        await expect(
+            router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)
+        )
+            .to.be.revertedWithCustomError(router, 'ExecutionFailed')
+            // unsupported protocol error
+            .withArgs(0, '0xea3559ef')
+      })
+
+      it('does not revert if invalid seaport transaction allowed to fail', async () => {
+        planner.addCommand(CommandType.SEAPORT, [0, '0x'], true)
+        const { commands, inputs } = planner
+
+        await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)
+      })
     })
   })
 

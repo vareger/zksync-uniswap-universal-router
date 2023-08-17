@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers'
 import hre from 'hardhat'
-import PERMIT2_COMPILE from '../../../../artifacts-zk/permit2/src/Permit2.sol/Permit2.json'
-import { Permit2 } from '../../../../typechain'
+import PERMIT2_COMPILE from '../../../artifacts-zk/permit2/src/Permit2.sol/Permit2.json'
+import { Permit2 } from '../../../typechain'
 import { Wallet } from 'zksync-web3'
 
 const { ethers } = hre

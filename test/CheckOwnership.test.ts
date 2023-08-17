@@ -1,6 +1,6 @@
 import { CommandType, RoutePlanner } from './shared/planner'
-import { expect } from './shared/expect'
-import { MockERC1155, MockERC721, Permit2, UniversalRouter } from '../../typechain'
+import { expect } from 'chai'
+import { MockERC1155, MockERC721, Permit2, UniversalRouter } from '../typechain'
 import { DEADLINE } from './shared/constants'
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter'
 import { Wallet } from 'zksync-web3'
@@ -32,7 +32,7 @@ describe('Check Ownership', () => {
       planner.addCommand(CommandType.OWNER_CHECK_721, [owner.address, mockERC721.address, 0])
 
       const { commands, inputs } = planner
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.not.reverted
+      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.not.be.reverted
     })
 
     it('reverts for invalid ownership', async () => {
@@ -50,7 +50,7 @@ describe('Check Ownership', () => {
       planner.addCommand(CommandType.OWNER_CHECK_1155, [owner.address, mockERC1155.address, 0, 1])
 
       const { commands, inputs } = planner
-      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.be.not.reverted
+      await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.not.be.reverted
     })
 
     it('reverts for invalid ownership', async () => {
