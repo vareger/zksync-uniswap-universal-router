@@ -63,8 +63,8 @@ export default {
     compilers: [DEFAULT_COMPILER_SETTINGS],
   },
   zksolc: {
-    version: '1.3.13',
-    compilerSource: 'binary',
+    version: "1.3.13",
+    compilerSource: "binary",
     settings: {},
   },
   mocha: {
