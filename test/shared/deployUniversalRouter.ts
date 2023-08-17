@@ -1,4 +1,4 @@
-import { UniversalRouter, Permit2, IWETH9 } from '../../../typechain'
+import { UniversalRouter, Permit2, IWETH9 } from '../../typechain'
 import { V2_INIT_CODE_HASH, V3_INIT_CODE_HASH } from './constants'
 import { deployContract, deployContractWithArtifact, getWallets } from './zkSyncUtils'
 import WETH9 from '../contracts/WETH9.json'

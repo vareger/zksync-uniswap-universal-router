@@ -1,11 +1,11 @@
 import type { Contract } from '@ethersproject/contracts'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { FeeAmount, TICK_SPACINGS } from '@uniswap/v3-sdk'
+import { FeeAmount } from '@uniswap/v3-sdk'
 import { parseEvents, V2_EVENTS, V3_EVENTS } from './shared/parseEvents'
-import { expect } from './shared/expect'
+import { expect } from 'chai'
 import { encodePath } from './shared/swapRouter02Helpers'
 import { BigNumber, BigNumberish } from 'ethers'
-import { Permit2, UniversalRouter } from '../../typechain'
+import { Permit2, UniversalRouter } from '../typechain'
 import {
   ADDRESS_THIS,
   CONTRACT_BALANCE,
@@ -18,7 +18,7 @@ import {
   SOURCE_MSG_SENDER,
   SOURCE_ROUTER,
 } from './shared/constants'
-import { expandTo18DecimalsBN, isTokenOrderCorrect } from './shared/helpers'
+import { expandTo18DecimalsBN } from './shared/helpers'
 import deployUniversalRouter, {
   deployNftManager,
   deployPermit2,
@@ -30,12 +30,10 @@ import { RoutePlanner, CommandType } from './shared/planner'
 import hre from 'hardhat'
 import { getPermitSignature, getPermitBatchSignature, PermitSingle } from './shared/protocolHelpers/permit2'
 const { ethers } = hre
-import * as PAIR_V2_ARTIFACT from '@uniswap/v2-core/artifacts-zk/contracts/UniswapV2Pair.sol/UniswapV2Pair.json'
-import * as POOL_ARTIFACT from '@uniswap/v3-core/artifacts-zk/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
 import { deployContract, getWallets } from './shared/zkSyncUtils'
-import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { Wallet } from 'zksync-web3'
-import { abi as safeCastAbi } from '../../artifacts-zk/permit2/src/libraries/SafeCast160.sol/SafeCast160.json'
+import { abi as safeCastAbi } from '../artifacts-zk/permit2/src/libraries/SafeCast160.sol/SafeCast160.json'
+import { createPairAndMintUniswapV2, createPoolAndMintUniswapV3, isTokenOrderCorrect, computePairAddress } from "./shared/protocolHelpers/uniswap";
 
 describe('Uniswap V2 and V3 Tests:', () => {
   let alice: Wallet
@@ -101,33 +99,30 @@ describe('Uniswap V2 and V3 Tests:', () => {
       BigNumber.from('17559860761679')
     )
 
-    // v3 liquidity amounts the same as for v2 in the small ticks range
+    // v3 liquidity amounts the same as for v2, price should be roughly the same
     await createPoolAndMintUniswapV3(
-      v3Factory,
       nftManager,
       daiContract,
       wethContract,
-      FeeAmount.MEDIUM,
       BigNumber.from('8140529658966941313012915'),
-      BigNumber.from('4430761666523311112725')
+      BigNumber.from('4430761666523311112725'),
+      FeeAmount.MEDIUM,
     )
     await createPoolAndMintUniswapV3(
-      v3Factory,
       nftManager,
       daiContract,
       usdcContract,
-      FeeAmount.MEDIUM,
       BigNumber.from('60144550130643463746539502'),
-      BigNumber.from('60116888330202')
+      BigNumber.from('60116888330202'),
+      FeeAmount.MEDIUM,
     )
     await createPoolAndMintUniswapV3(
-      v3Factory,
       nftManager,
       wethContract,
       usdcContract,
-      FeeAmount.MEDIUM,
       BigNumber.from('33787846973815924916236'),
-      BigNumber.from('62122035788372')
+      BigNumber.from('62122035788372'),
+      FeeAmount.MEDIUM
     )
 
     router = (
@@ -471,7 +466,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
     describe('ETH --> ERC20', () => {
       it('completes a V2 exactIn swap', async () => {
         const minAmountOut = expandTo18DecimalsBN(0.001)
-        const pairAddress = await v2Factory.getPair(daiContract.address, wethContract.address)
+        const pairAddress = computePairAddress(v2Factory.address, daiContract.address, wethContract.address)
         planner.addCommand(CommandType.WRAP_ETH, [pairAddress, amountIn])
         // amountIn of 0 because the weth is already in the pair
         planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
@@ -704,7 +699,7 @@ describe('Uniswap V2 and V3 Tests:', () => {
           const v2AmountOutMin = expandTo18DecimalsBN(0.0005)
 
           planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [
-            await v2Factory.getPair(usdcContract.address, wethContract.address),
+            computePairAddress(v2Factory.address, usdcContract.address, wethContract.address),
             v3AmountIn,
             v3AmountOutMin,
             encodePathExactInput(v3Tokens),
@@ -760,12 +755,12 @@ describe('Uniswap V2 and V3 Tests:', () => {
           // 1) transfer funds into DAI-USDC and DAI-USDT pairs to trade
           planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
             daiContract.address,
-            await v2Factory.getPair(daiContract.address, usdcContract.address),
+            computePairAddress(v2Factory.address, daiContract.address, usdcContract.address),
             v2AmountIn1,
           ])
           planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
             daiContract.address,
-            await v2Factory.getPair(daiContract.address, usdtContract.address),
+            computePairAddress(v2Factory.address, daiContract.address, usdtContract.address),
             v2AmountIn2,
           ])
 
@@ -789,13 +784,13 @@ describe('Uniswap V2 and V3 Tests:', () => {
           const BATCH_TRANSFER = [
             {
               from: bob.address,
-              to: await v2Factory.getPair(daiContract.address, usdcContract.address),
+              to: computePairAddress(v2Factory.address, daiContract.address, usdcContract.address),
               amount: v2AmountIn1,
               token: daiContract.address,
             },
             {
               from: bob.address,
-              to: await v2Factory.getPair(daiContract.address, usdtContract.address),
+              to: computePairAddress(v2Factory.address, daiContract.address, usdtContract.address),
               amount: v2AmountIn2,
               token: daiContract.address,
             },
@@ -1157,66 +1152,5 @@ describe('Uniswap V2 and V3 Tests:', () => {
 
   function encodePathExactOutput(tokens: string[]) {
     return encodePath(tokens.slice().reverse(), new Array(tokens.length - 1).fill(FeeAmount.MEDIUM))
-  }
-
-  async function createPairAndMintUniswapV2(
-    v2Factory: Contract,
-    token0: Contract,
-    token1: Contract,
-    amount0: BigNumber,
-    amount1: BigNumber
-  ) {
-    await v2Factory.createPair(token0.address, token1.address)
-    const pairAddress = await v2Factory.getPair(token0.address, token1.address)
-    const pair = new ethers.Contract(pairAddress, PAIR_V2_ARTIFACT.abi, getWallets()[0])
-    await token0.transfer(pairAddress, amount0)
-    await token1.transfer(pairAddress, amount1)
-    await pair.mint(getWallets()[0].address)
-  }
-
-  async function createPoolAndMintUniswapV3(
-    v3Factory: Contract,
-    nftManager: Contract,
-    token0: Contract,
-    token1: Contract,
-    fee: FeeAmount,
-    amount0: BigNumber,
-    amount1: BigNumber
-  ) {
-    if (token0.address.toLowerCase() > token1.address.toLowerCase()) {
-      ;[token0, token1] = [token1, token0]
-      ;[amount0, amount1] = [amount1, amount0]
-    }
-    await nftManager.createAndInitializePoolIfNecessary(
-      token0.address,
-      token1.address,
-      fee,
-      encodePriceSqrt(amount1, amount0)
-    )
-
-    const poolAddress = await v3Factory.getPool(token0.address, token1.address, fee)
-    const pool = new ethers.Contract(poolAddress, POOL_ARTIFACT.abi, getWallets()[0])
-
-    let tick = (await pool.slot0()).tick
-
-    const tickLower = (Math.floor(tick / TICK_SPACINGS[fee]) - 1) * TICK_SPACINGS[fee]
-    const tickUpper = (Math.floor(tick / TICK_SPACINGS[fee]) + 2) * TICK_SPACINGS[fee]
-
-    const liquidityParams = {
-      token0: token0.address,
-      token1: token1.address,
-      fee,
-      tickLower,
-      tickUpper,
-      recipient: getWallets()[0].address,
-      amount0Desired: amount0,
-      amount1Desired: amount1,
-      amount0Min: 0,
-      amount1Min: 0,
-      deadline: DEADLINE,
-    }
-    await token0.approve(nftManager.address, amount0)
-    await token1.approve(nftManager.address, amount1)
-    await nftManager.mint(liquidityParams)
   }
 })
