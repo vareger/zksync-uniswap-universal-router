@@ -1,6 +1,5 @@
 import 'hardhat-typechain'
 import '@nomiclabs/hardhat-ethers'
-import '@nomiclabs/hardhat-waffle'
 import '@matterlabs/hardhat-zksync-deploy'
 import '@matterlabs/hardhat-zksync-solc'
 import '@matterlabs/hardhat-zksync-verify'
@@ -66,11 +65,7 @@ export default {
   zksolc: {
     version: '1.3.13',
     compilerSource: 'binary',
-    settings: {
-      metadata: {
-        bytecodeHash: 'none',
-      },
-    },
+    settings: {},
   },
   mocha: {
     timeout: 100000,

@@ -1846,11 +1846,7 @@
     dotenv "^14.2.0"
     hardhat-watcher "^2.1.1"
 
-"@uniswap/v2-core@1.0.1", "@uniswap/v2-core@https://github.com/AntonD3/v2-core.git#v1.0.1-zksync-era":
-  version "1.0.1"
-  resolved "https://github.com/AntonD3/v2-core.git#bf8f5db636135f4fd11edc439d39acc60042c553"
-
-"@uniswap/v2-core@https://github.com/matter-labs/v2-core.git#v1.0.1-zksync-era":
+"@uniswap/v2-core@1.0.1", "@uniswap/v2-core@https://github.com/matter-labs/v2-core.git#v1.0.1-zksync-era":
   version "1.0.1"
   resolved "https://github.com/matter-labs/v2-core.git#8d4de891341d2a234f598403c6e3b0cc69af58ea"
 
@@ -1865,11 +1861,7 @@
     tiny-invariant "^1.1.0"
     tiny-warning "^1.0.3"
 
-"@uniswap/v3-core@1.0.0", "@uniswap/v3-core@https://github.com/AntonD3/v3-core.git#v1.0.0-zksync-era":
-  version "1.0.0"
-  resolved "https://github.com/AntonD3/v3-core.git#ad482a4cb91c86c97c63d99caa9c6267403e5d38"
-
-"@uniswap/v3-core@https://github.com/matter-labs/v3-core.git#v1.0.0-zksync-era":
+"@uniswap/v3-core@1.0.0", "@uniswap/v3-core@https://github.com/matter-labs/v3-core.git#v1.0.0-zksync-era":
   version "1.0.0"
   resolved "https://github.com/matter-labs/v3-core.git#04edd15144fdb9a54c44fd2c7efb5735e26f9106"
 

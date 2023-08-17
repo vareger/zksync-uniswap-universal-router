@@ -31,8 +31,8 @@
     "node": ">=14"
   },
   "dependencies": {
-    "@uniswap/v2-core": "https://github.com/AntonD3/v2-core.git#v1.0.1-zksync-era",
-    "@uniswap/v3-core": "https://github.com/AntonD3/v3-core.git#v1.0.0-zksync-era",
+    "@uniswap/v2-core": "https://github.com/matter-labs/v2-core.git#v1.0.1-zksync-era",
+    "@uniswap/v3-core": "https://github.com/matter-labs/v3-core.git#v1.0.0-zksync-era",
     "@openzeppelin/contracts": "4.7.0"
   },
   "devDependencies": {
